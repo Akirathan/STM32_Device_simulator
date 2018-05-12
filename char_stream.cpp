@@ -49,16 +49,17 @@ void CharStream::readWhiteSpaces()
 }
 
 /**
- * In case when there are more words on line than @param strings_len, fill whole
- * @param strings buffer and ignore rest of the line (just move the read head).
+ * In case when there are more words on line than strings_len, fill whole
+ * strings buffer and ignore rest of the line (just move the read head).
  *
- * @note line delimiter is \r\n
+ * @note line delimiter is @code \r\n @endcode
  * @param strings      ... buffer for words on line
  * @param strings_len  ... length of the @param strings buffer
  * @param max_word_len ... max length of a word in the line
+ * @param word_count   ... may be nullptr
  */
 template<size_t strings_len, size_t max_word_len>
-void CharStream::readLine(char (&strings)[strings_len][max_word_len])
+void CharStream::readLine(char (&strings)[strings_len][max_word_len], size_t *word_count)
 {
     size_t word_idx = 0;
     while (!atEndOfLine()) {
@@ -70,8 +71,11 @@ void CharStream::readLine(char (&strings)[strings_len][max_word_len])
         // Copy word into buffer when there is space.
         if (word_idx < strings_len) {
             std::memcpy(strings[word_idx], word, word_len);
-            word_idx++;
         }
+        word_idx++;
+    }
+    if (word_count != nullptr) {
+        *word_count = word_idx;
     }
     // Read "\r\n"
     bufferIdx += 2;
@@ -80,6 +84,22 @@ void CharStream::readLine(char (&strings)[strings_len][max_word_len])
 bool CharStream::atEnd() const
 {
     return bufferIdx >= bufferSize;
+}
+
+/**
+ * Returns pointer to the rest of the buffer.
+ * Used for getting body of HTTP message for example.
+ *
+ * @return pointer to the rest of the buffer
+ */
+const char * CharStream::getRestOfBuffer()
+{
+    return buffer + bufferIdx;
+}
+
+bool CharStream::atEmptyLine() const
+{
+    return atEndOfLine();
 }
 
 bool CharStream::isWhiteSpace(char c) const

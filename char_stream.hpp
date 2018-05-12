@@ -19,7 +19,8 @@ public:
 	void readWord(char *word, size_t *word_len);
 	void readWhiteSpaces();
     template <size_t strings_len, size_t max_word_len>
-        void readLine(char (&strings)[strings_len][max_word_len]);
+    void readLine(char (&strings)[strings_len][max_word_len], size_t *word_count);
+	const char * getRestOfBuffer();
 	bool atEnd() const;
     bool atEmptyLine() const;
 

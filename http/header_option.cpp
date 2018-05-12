@@ -29,4 +29,23 @@ size_t HeaderOption::getValueSize() const
 	return std::strlen(value);
 }
 
+void HeaderOption::setType(HeaderOption::Type type)
+{
+    this->type = type;
+
+	if (type == UNKNOWN_TYPE) {
+		value = nullptr;
+	}
+}
+
+HeaderOption::Type HeaderOption::getType() const
+{
+	return type;
+}
+
+void HeaderOption::copyIntoValue(const char *newValue)
+{
+    std::strcpy(value, newValue);
+}
+
 } // namespace http

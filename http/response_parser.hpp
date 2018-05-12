@@ -23,6 +23,7 @@ private:
     static bool parseStatusLine(CharStream &char_stream, int *status_code);
     static bool parseHeader(CharStream &char_stream, Header *header);
     static bool parseOptionLine(CharStream &char_stream, HeaderOption *header_option);
+    static void resolveOptionType(const char *word, HeaderOption::Type *type);
 };
 
 } // namespace http
