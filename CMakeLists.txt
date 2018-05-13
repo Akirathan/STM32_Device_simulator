@@ -21,7 +21,6 @@ set(SOURCE_FILES
     main.cpp
     char_stream.cpp
     rt_assert.h
-    http_communicator.cpp
 )
 
 add_executable(device_simulator ${SOURCE_FILES})

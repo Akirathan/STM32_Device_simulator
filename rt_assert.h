@@ -9,7 +9,7 @@
 #include <stdlib.h>
 
 #define rt_assert(condition, message) {\
-    if (!condition) {\
+    if (!(condition)) {\
         printf(message);\
         exit(1);\
     }\

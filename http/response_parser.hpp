@@ -19,11 +19,11 @@ public:
     static bool parse(const char *buffer, const size_t buffer_size, Response *response);
 private:
     static const size_t MAX_OPTION_WORD_LEN = 50;
-    static const size_t MAX_OPTION_WORDS_COUNT = 10;
     static bool parseStatusLine(CharStream &char_stream, int *status_code);
     static bool parseHeader(CharStream &char_stream, Header *header);
     static bool parseOptionLine(CharStream &char_stream, HeaderOption *header_option);
     static void resolveOptionType(const char *word, HeaderOption::Type *type);
+    static char * trimWhiteSpaces(char *str);
 };
 
 } // namespace http

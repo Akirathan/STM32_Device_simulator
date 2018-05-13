@@ -6,14 +6,22 @@
 #define HTTP_COMMUNICATOR_HTTP_HEADER_HPP
 
 #include "header_option.hpp"
-#include "response_parser.hpp"
 
 namespace http {
 
+/**
+ * Represents HTTP header
+ * May be empty ie. contain zero HeaderOptions.
+ */
 class Header {
+private:
+    static const size_t MAX_OPTIONS = 10;
+
 public:
+    static const size_t MAX_SIZE = MAX_OPTIONS * HeaderOption::MAX_SIZE;
+
 	Header();
-	void appendOption(HeaderOption option);
+	void appendOption(const HeaderOption &option);
 
 	/**
 	 * @param type
@@ -28,7 +36,7 @@ public:
 	void toBuffer(char *buffer) const;
 
 private:
-	HeaderOption options[HTTP_HEADER_MAX_OPTIONS];
+	HeaderOption options[MAX_OPTIONS];
 	size_t optionsIdx;
 };
 

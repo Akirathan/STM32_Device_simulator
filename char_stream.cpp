@@ -28,11 +28,44 @@ void CharStream::readWord(char *word, size_t *word_len)
 {
     char c = '\0';
     unsigned long wordIdx = 0;
-    while (!isWhiteSpace(c)) {
+    while (!isWhiteSpace(c) && !atEnd()) {
         c = readChar();
-        word[wordIdx++] = c;
+        if (!isWhiteSpace(c)) {
+            word[wordIdx++] = c;
+        }
     }
-    unreadChar();
+
+    word[wordIdx++] = '\0';
+
+    if (!atEnd()) {
+        unreadChar();
+    }
+
+    if (word_len != nullptr) {
+        *word_len = wordIdx;
+    }
+}
+
+/**
+ * Reads one word until delimiter. After reading next char points at delimiter.
+ * @param delimiter
+ */
+void CharStream::readUntilDelimiter(char *word, size_t *word_len, const char delimiter)
+{
+    char c = '\0';
+    unsigned long wordIdx = 0;
+    while (c != delimiter && !atEnd()) {
+        c = readChar();
+        if (c != delimiter) {
+            word[wordIdx++] = c;
+        }
+    }
+
+    word[wordIdx++] = '\0';
+
+    if (!atEnd()) {
+        unreadChar();
+    }
 
     if (word_len != nullptr) {
         *word_len = wordIdx;
@@ -41,11 +74,13 @@ void CharStream::readWord(char *word, size_t *word_len)
 
 void CharStream::readWhiteSpaces()
 {
-    char c = '\0';
+    char c = ' ';
     while (isWhiteSpace(c)) {
         c = readChar();
     }
-    unreadChar();
+    if (c != '\0') {
+        unreadChar();
+    }
 }
 
 bool CharStream::atEnd() const
@@ -61,7 +96,11 @@ bool CharStream::atEnd() const
  */
 const char * CharStream::getRestOfBuffer()
 {
-    return buffer + bufferIdx;
+    const char *ret_val = nullptr;
+    if (!atEnd()) {
+        ret_val = buffer + bufferIdx;
+    }
+    return ret_val;
 }
 
 bool CharStream::atEmptyLine() const
@@ -81,6 +120,21 @@ void CharStream::unreadChar()
 
 bool CharStream::atEndOfLine() const
 {
-    return buffer[bufferIdx] == '\r' && buffer[bufferIdx + 1] == '\n';
+    bool ret_val = false;
+    if (bufferIdx < bufferSize - 2) {
+        ret_val = buffer[bufferIdx] == '\r' && buffer[bufferIdx + 1] == '\n';
+    }
+    return ret_val;
 }
+
+void CharStream::shiftBuffer(size_t count)
+{
+    if (bufferIdx + count < bufferSize) {
+        bufferIdx += count;
+    }
+    else {
+        bufferIdx = bufferSize;
+    }
+}
+
 

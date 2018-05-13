@@ -8,7 +8,8 @@
 namespace http {
 
 Response::Response() :
-        statusCode(NONE)
+        statusCode(NONE),
+        body(nullptr)
 {}
 
 void Response::setStatusCode(unsigned int status_code)
@@ -23,7 +24,6 @@ void Response::copyIntoBody(const char *newBody)
 
 void Response::setHeader(const Header &header)
 {
-    // copy
     this->header = header;
 }
 
@@ -31,10 +31,10 @@ void Response::setHeader(const Header &header)
  * Converts given int code into @ref status_code_t and saves it into private data member.
  * @param code
  */
-status_code_t Response::convertStatusCode(unsigned int code)
+Response::status_code_t Response::convertStatusCode(unsigned int code)
 {
     status_code_t ret_val = NONE;
-    if (code == 201) {
+    if (code == 200) {
         ret_val = OK;
     }
     else if (code == 404) {

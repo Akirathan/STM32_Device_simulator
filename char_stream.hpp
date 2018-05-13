@@ -18,6 +18,7 @@ public:
 	CharStream(const char *buffer, const size_t buffer_size);
 	char readChar();
 	void readWord(char *word, size_t *word_len);
+    void readUntilDelimiter(char *word, size_t *word_len, const char delimiter);
 	void readWhiteSpaces();
 
     /**
@@ -34,7 +35,7 @@ public:
     void readLine(char (&strings)[strings_len][max_word_len], size_t *word_count)
     {
         size_t word_idx = 0;
-        while (!atEndOfLine()) {
+        while (!atEndOfLine() && !atEnd()) {
             readWhiteSpaces();
 
             char word[max_word_len];
@@ -50,7 +51,36 @@ public:
             *word_count = word_idx;
         }
         // Read "\r\n"
-        bufferIdx += 2;
+        shiftBuffer(2);
+    };
+
+    /**
+     * See readLine above.
+     * @param delimiter ... delimiter of words on line
+     */
+    template <size_t strings_len, size_t max_word_len>
+    void readLine(char (&strings)[strings_len][max_word_len], size_t *word_count, const char delimiter)
+    {
+        size_t word_idx = 0;
+        while (!atEndOfLine() && !atEnd()) {
+            char word[max_word_len];
+            size_t word_len = 0;
+            readUntilDelimiter(word, &word_len, delimiter);
+
+            // Read delimiter
+            shiftBuffer(1);
+
+            // Copy word into buffer when there is space.
+            if (word_idx < strings_len) {
+                std::memcpy(strings[word_idx], word, word_len);
+            }
+            word_idx++;
+        }
+        if (word_count != nullptr) {
+            *word_count = word_idx;
+        }
+        // Read "\r\n"
+        shiftBuffer(2);
     };
 
 	const char * getRestOfBuffer();
@@ -64,6 +94,7 @@ private:
     bool isWhiteSpace(char c) const;
     void unreadChar();
     bool atEndOfLine() const;
+    void shiftBuffer(size_t count);
 };
 
 #endif //DEVICE_SIMULATOR_CHAR_STREAM_HPP

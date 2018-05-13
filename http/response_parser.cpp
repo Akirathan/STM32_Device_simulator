@@ -5,6 +5,7 @@
 #include "response_parser.hpp"
 #include <cstdlib>
 #include <cstring>
+#include <cctype>
 
 namespace http {
 
@@ -36,7 +37,9 @@ bool ResponseParser::parse(const char *buffer, const size_t buffer_size, Respons
     char_stream.readWhiteSpaces();
 
     const char *body = char_stream.getRestOfBuffer();
-    response->copyIntoBody(body);
+    if (body != nullptr) {
+        response->copyIntoBody(body);
+    }
 
     return ret_val;
 }
@@ -69,7 +72,7 @@ bool ResponseParser::parseStatusLine(CharStream &char_stream, int *status_code)
 bool ResponseParser::parseHeader(CharStream &char_stream, Header *header)
 {
     bool ret_val = true;
-    while (!char_stream.atEmptyLine()) {
+    while (!char_stream.atEmptyLine() && !char_stream.atEnd()) {
         HeaderOption header_option;
         if (!parseOptionLine(char_stream, &header_option)) {
             ret_val = false;
@@ -91,18 +94,18 @@ bool ResponseParser::parseHeader(CharStream &char_stream, Header *header)
 bool ResponseParser::parseOptionLine(CharStream &char_stream, HeaderOption *header_option)
 {
     bool ret_val = true;
-    char words[MAX_OPTION_WORDS_COUNT][MAX_OPTION_WORD_LEN];
+    char words[2][MAX_OPTION_WORD_LEN];
     size_t words_count = 0;
-    char_stream.readLine(words, &words_count);
+    char_stream.readLine(words, &words_count, ':');
 
     HeaderOption::Type option_type;
-    resolveOptionType(words[0], &option_type);
+    resolveOptionType(trimWhiteSpaces(words[0]), &option_type);
     header_option->setType(option_type);
 
     // Fill value of header_option if option is not of unknown type.
     if (option_type != HeaderOption::UNKNOWN_TYPE) {
         if (words_count <= 2) {
-            header_option->copyIntoValue(words[1]);
+            header_option->setValue(trimWhiteSpaces(words[1]));
         }
         else {
             ret_val = false;
@@ -113,15 +116,33 @@ bool ResponseParser::parseOptionLine(CharStream &char_stream, HeaderOption *head
 
 void ResponseParser::resolveOptionType(const char *word, HeaderOption::Type *type)
 {
-    if (std::strcmp(word, HeaderOption::CONTENT_LENGTH_STR)) {
+    if (std::strcmp(word, HeaderOption::CONTENT_LENGTH_STR) == 0) {
         *type = HeaderOption::CONTENT_LENGTH;
     }
-    else if (std::strcmp(word, HeaderOption::CONTENT_TYPE_STR)) {
+    else if (std::strcmp(word, HeaderOption::CONTENT_TYPE_STR) == 0) {
         *type = HeaderOption::CONTENT_TYPE;
     }
     else {
         *type = HeaderOption::UNKNOWN_TYPE;
     }
+}
+
+/**
+ * Returns pointer to substring that is trimmed from whitespaces
+ */
+char *ResponseParser::trimWhiteSpaces(char *str)
+{
+    while (std::isspace(*str)) {
+        str++;
+    }
+
+    char *end = str + std::strlen(str) - 1;
+    while (std::isspace(*end)) {
+        end--;
+    }
+    *(end + 1) = '\0';
+
+    return str;
 }
 
 } // namespace http
