@@ -2,10 +2,11 @@
 #include <cstdio>
 #include "http/response_parser.hpp"
 #include "http/request.hpp"
+#include "communication/interval.hpp"
 
 using namespace http;
 
-int main()
+void create_request()
 {
     const char *message = "HTTP/1.1 200 OK\r\nContent-Length: 24";
     const size_t message_len = std::strlen(message);
@@ -25,4 +26,11 @@ int main()
 
     char req_buffer[Request::TOTAL_SIZE];
     request.toBuffer(req_buffer);
+
+    std::printf("%s", req_buffer);
+}
+
+int main()
+{
+    create_request();
 }
