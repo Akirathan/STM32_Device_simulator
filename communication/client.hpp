@@ -28,10 +28,6 @@ class Client {
 
 public:
     static void init(const char *ip_addr, uint16_t port);
-    /**
-     * This method is specific for BSD socket API.
-     */
-    static void poll();
     static void receiveCb(const uint8_t *buff, const size_t buff_size);
     static bool sendConnectReq(Device *device, uint32_t *server_real_time);
     static bool sendTemperature(const double temp, const uint32_t time_stamp);

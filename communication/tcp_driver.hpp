@@ -17,6 +17,7 @@ class TcpDriver {
 public:
     static void connect(const char *ip_addr, const uint16_t port);
     static bool send(const uint8_t *buff, const size_t buff_len);
+    static void poll();
 
 private:
     static int socketFd;
