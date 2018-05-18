@@ -6,6 +6,7 @@
 #define DEVICE_SIMULATOR_CLIENT_HPP
 
 #include <cstdint>
+#include "http/request.hpp"
 #include "http/response.hpp"
 #include "device.hpp"
 #include "interval_list.hpp"
@@ -18,6 +19,10 @@ namespace comm {
  * Conforms to callback API.
 */
 class Client {
+private:
+    static const size_t IP_ADDR_LEN = 16;
+    static const size_t HOST_LEN = IP_ADDR_LEN + 7;
+
     enum await_state_t {
         AWAIT_NONE,
         AWAIT_CONNECT_RESPONSE,
@@ -30,20 +35,24 @@ class Client {
 public:
     static void init(const char *ip_addr, uint16_t port);
     static void receiveCb(const uint8_t *buff, const size_t buff_size);
-    static bool sendConnectReq(Device *device, uint32_t *server_real_time);
+    static bool sendConnectReq(Device *device);
     static bool sendTemperature(const double temp, const uint32_t time_stamp);
     static bool sendIntervals(const IntervalList &intervals, const uint32_t time_stamp);
     static bool receiveIntervals(IntervalList *intervals);
     static bool requestIntervalTimeStamp(uint32_t *time_stamp);
 
 private:
+    static const char * CONNECT_URL = "/connect";
     static bool initialized;
-    static char ipAddr[9];
+    static char ipAddr[IP_ADDR_LEN];
     static uint16_t port;
+    static char host[HOST_LEN];
     static await_state_t state;
     static Device *currDevice;
 
+    static void initHost(const char *ip_addr, const uint16_t port);
     static bool readResponse(const uint8_t *buff, const size_t buff_size, http::Response *response);
+    static http::Request createConnectReq(const Device *device) const;
 };
 
 } // namespace comm
