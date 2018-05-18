@@ -15,13 +15,12 @@ class IntervalList {
 public:
     static const size_t MAX_NUM = 20;
 
-    static IntervalList deserialize(const uint8_t *buffer);
+    static IntervalList deserialize(const uint8_t *buffer, const size_t buff_size);
 
     IntervalList();
-    IntervalList(uint32_t time_stamp);
     void setTimestamp(uint32_t time_stamp);
     void addInterval(const Interval &interval);
-    void serialize(uint8_t *buffer) const;
+    void serialize(uint8_t *buffer, size_t *size) const;
 
 private:
     Interval intervals[MAX_NUM];
