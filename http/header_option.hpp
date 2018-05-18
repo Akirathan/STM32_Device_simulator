@@ -21,11 +21,13 @@ public:
     static const size_t MAX_SIZE = TYPE_LEN + VALUE_LEN;
     static constexpr const char *CONTENT_TYPE_STR = "Content-Type";
     static constexpr const char *CONTENT_LENGTH_STR = "Content-Length";
+    static constexpr const char *HOST_STR = "Host";
 
 	enum Type {
         UNKNOWN_TYPE,
 		CONTENT_TYPE,
-		CONTENT_LENGTH
+		CONTENT_LENGTH,
+		HOST
 	};
 
 	HeaderOption();

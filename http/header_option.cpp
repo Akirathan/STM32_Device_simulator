@@ -33,18 +33,23 @@ size_t HeaderOption::getTotalSize() const
  */
 void HeaderOption::toBuffer(char *buffer) const
 {
+    const char *type_str = nullptr;
     switch (type) {
+        case UNKNOWN_TYPE:
+            break;
         case CONTENT_TYPE:
-            std::strcpy(buffer, CONTENT_TYPE_STR);
-            buffer += std::strlen(CONTENT_TYPE_STR);
+            type_str = CONTENT_TYPE_STR;
             break;
         case CONTENT_LENGTH:
-            std::strcpy(buffer, CONTENT_LENGTH_STR);
-            buffer += std::strlen(CONTENT_LENGTH_STR);
+            type_str = CONTENT_LENGTH_STR;
             break;
-        default:
+        case HOST:
+            type_str = HOST_STR;
             break;
     }
+    std::strcpy(buffer, type_str);
+    buffer += std::strlen(type_str);
+
     *(buffer++) = ':';
     std::strcpy(buffer, value);
     buffer += std::strlen(value);
@@ -60,9 +65,11 @@ size_t HeaderOption::getTypeSize() const
 			return std::strlen(CONTENT_TYPE_STR);
 		case CONTENT_LENGTH:
 			return std::strlen(CONTENT_LENGTH_STR);
-		default:
+        case HOST:
+            return std::strlen(HOST_STR);
+        default:
             return 0;
-	}
+    }
 }
 
 size_t HeaderOption::getValueSize() const
