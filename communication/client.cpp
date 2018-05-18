@@ -7,12 +7,13 @@
 
 namespace comm {
 
+Client::await_state_t Client::state = AWAIT_NONE;
 
 void Client::receiveCb(const uint8_t *buff, const size_t buff_size)
 {
+    http::Response response;
     switch (state) {
         case AWAIT_CONNECT_RESPONSE:
-            http::Response response;
             if (!readResponse(buff, buff_size, &response)) {
 
             }
@@ -31,7 +32,8 @@ void Client::receiveCb(const uint8_t *buff, const size_t buff_size)
  */
 bool Client::readResponse(const uint8_t *buff, const size_t buff_size, http::Response *response)
 {
-    return http::ResponseParser::parse(static_cast<const char *>(buff), buff_size, response);
+    return http::ResponseParser::parse(reinterpret_cast<const char *>(buff), buff_size, response);
 }
+
 
 } // namespace comm

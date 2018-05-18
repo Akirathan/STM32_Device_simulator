@@ -19,6 +19,7 @@ namespace comm {
 */
 class Client {
     enum await_state_t {
+        AWAIT_NONE,
         AWAIT_CONNECT_RESPONSE,
         AWAIT_INTERVAL_TIMESTAMP_RESPONSE,
         AWAIT_INTERVALS,

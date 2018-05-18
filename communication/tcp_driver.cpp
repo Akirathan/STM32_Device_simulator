@@ -16,6 +16,9 @@
 
 namespace comm {
 
+int TcpDriver::socketFd = 0;
+bool TcpDriver::connected = false;
+
 void TcpDriver::connect(const char *ip_addr, const uint16_t port)
 {
     struct addrinfo hints;
@@ -29,7 +32,7 @@ void TcpDriver::connect(const char *ip_addr, const uint16_t port)
     getaddrinfo(ip_addr, port_str, &hints, &res);
 
     socketFd = socket(AF_INET, SOCK_STREAM, 0);
-    if (connect(socketFd, res->ai_addr, res->ai_addrlen) != 0) {
+    if (::connect(socketFd, res->ai_addr, res->ai_addrlen) != 0) {
         std::fprintf(stderr, "connect");
     }
 
