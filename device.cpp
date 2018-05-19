@@ -19,6 +19,11 @@ const char *Device::getKey() const
     return key;
 }
 
+const char *Device::getId() const
+{
+    return id;
+}
+
 /**
  * Sets connected state of the device ie. it is connected to the server.
  */
@@ -36,4 +41,5 @@ bool Device::connect()
     bool ret_val = false;
     ret_val = comm::Client::sendConnectReq(this);
 }
+
 

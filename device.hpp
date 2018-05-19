@@ -16,6 +16,7 @@ private:
 public:
     Device(const char *id, const char *key);
     const char * getKey() const;
+    const char * getId() const;
     uint32_t getTemp() const;
     void setTemp(uint32_t temp);
     void setIntervals(const comm::IntervalList &interval_list);
