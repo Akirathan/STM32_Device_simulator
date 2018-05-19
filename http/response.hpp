@@ -23,6 +23,7 @@ public:
 
     Response();
     void setStatusCode(unsigned int status_code);
+	status_code_t getStatusCode() const;
     void copyIntoBody(const char *newBody);
     void setHeader(const Header &header);
 	size_t getBodySize() const;

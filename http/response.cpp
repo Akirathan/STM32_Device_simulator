@@ -17,6 +17,11 @@ void Response::setStatusCode(unsigned int status_code)
     statusCode = convertStatusCode(status_code);
 }
 
+Response::status_code_t Response::getStatusCode() const
+{
+    return statusCode;
+}
+
 void Response::copyIntoBody(const char *newBody)
 {
     std::strcpy(body, newBody);
