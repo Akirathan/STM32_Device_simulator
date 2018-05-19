@@ -11,7 +11,7 @@ namespace comm {
 bool                  Client::initialized = false;
 char                  Client::ipAddr[IP_ADDR_LEN];
 uint16_t              Client::port = 0;
-static char           Client::host[HOST_LEN];
+char                  Client::host[HOST_LEN];
 Client::await_state_t Client::state = AWAIT_NONE;
 Device *              Client::currDevice = nullptr;
 
@@ -23,17 +23,15 @@ void Client::init(const char *ip_addr, uint16_t port)
 
 void Client::receiveCb(const uint8_t *buff, const size_t buff_size)
 {
-    http::Response response;
     switch (state) {
         case AWAIT_CONNECT_RESPONSE:
-            if (!readResponse(buff, buff_size, &response)) {
-
-            }
+            readConnectResponse(buff, buff_size);
             break;
         case AWAIT_INTERVAL_TIMESTAMP_RESPONSE:break;
         case AWAIT_INTERVALS:break;
         case AWAIT_INTERVALS_ACK:break;
         case AWAIT_TEMP_ACK:break;
+        case AWAIT_NONE:break;
     }
 }
 
@@ -76,7 +74,33 @@ bool Client::readResponse(const uint8_t *buff, const size_t buff_size, http::Res
     return http::ResponseParser::parse(reinterpret_cast<const char *>(buff), buff_size, response);
 }
 
-http::Request Client::createConnectReq(const Device *device) const
+/**
+ * Response from server should contain server_real_time in body.
+ * @param buff      ... received buffer from server.
+ * @param buff_size ... received buffer size.
+ */
+void Client::readConnectResponse(const uint8_t *buff, const size_t buff_size)
+{
+    http::Response response;
+    if (!readResponse(buff, buff_size, &response)) {
+        // Send connected request again
+        // TODO: error handling
+        sendConnectReq(currDevice);
+        return;
+    }
+
+    if (response.getStatusCode() != http::Response::OK) {
+        // ...
+        return;
+    }
+
+    // TODO: parse server_real_time from body.
+
+    currDevice->setConnected();
+    currDevice = nullptr;
+}
+
+http::Request Client::createConnectReq(const Device *device)
 {
     using namespace http;
 
@@ -87,6 +111,9 @@ http::Request Client::createConnectReq(const Device *device) const
     request.appendHeader(hdr);
 
     // TODO: encrypted body
+    request.appendBody(device->getKey());
+
+    return request;
 }
 
 

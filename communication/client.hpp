@@ -42,7 +42,7 @@ public:
     static bool requestIntervalTimeStamp(uint32_t *time_stamp);
 
 private:
-    static const char * CONNECT_URL = "/connect";
+    static const constexpr char * CONNECT_URL = "/connect";
     static bool initialized;
     static char ipAddr[IP_ADDR_LEN];
     static uint16_t port;
@@ -52,7 +52,8 @@ private:
 
     static void initHost(const char *ip_addr, const uint16_t port);
     static bool readResponse(const uint8_t *buff, const size_t buff_size, http::Response *response);
-    static http::Request createConnectReq(const Device *device) const;
+    static void readConnectResponse(const uint8_t *buff, const size_t buff_size);
+    static http::Request createConnectReq(const Device *device);
 };
 
 } // namespace comm
