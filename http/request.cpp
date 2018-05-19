@@ -5,7 +5,6 @@
 #include "request.hpp"
 
 #include <cstring>
-#include "../rt_assert.h"
 
 namespace http {
 
@@ -30,6 +29,7 @@ size_t Request::getSize() const
         size += 2;
         size += std::strlen(body);
     }
+    return size;
 }
 
 void Request::appendHeader(const Header &header)
