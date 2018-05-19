@@ -109,10 +109,17 @@ http::Request Client::createConnectReq(const Device *device)
 {
     using namespace http;
 
-    Request request(Request::GET, CONNECT_URL);
+    char body_len[20];
+    std::sprintf(body_len, "%lu", std::strlen(device->getId()));
+
+    Request request(Request::POST, CONNECT_URL);
     HeaderOption hdr_option_host(HeaderOption::HOST, host);
+    HeaderOption hdr_option_content_type(HeaderOption::CONTENT_TYPE, "text/plain");
+    HeaderOption hdr_option_content_length(HeaderOption::CONTENT_LENGTH, body_len);
     Header hdr;
     hdr.appendOption(hdr_option_host);
+    hdr.appendOption(hdr_option_content_type);
+    hdr.appendOption(hdr_option_content_length);
     request.appendHeader(hdr);
 
     // TODO: encrypted body
