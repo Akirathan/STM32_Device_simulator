@@ -17,8 +17,12 @@ Device *              Client::currDevice = nullptr;
 
 void Client::init(const char *ip_addr, uint16_t port)
 {
-    std::strcpy(ipAddr, ip_addr);
-    Client::port = port;
+    if (!initialized) {
+        std::strcpy(ipAddr, ip_addr);
+        Client::port = port;
+        initHost(ip_addr, port);
+        initialized = true;
+    }
 }
 
 void Client::receiveCb(const uint8_t *buff, const size_t buff_size)
@@ -47,7 +51,7 @@ bool Client::sendConnectReq(Device *device)
     currDevice = device;
     TcpDriver::connect(ipAddr, port);
 
-    http::Request req = createConnectReq(nullptr);
+    http::Request req = createConnectReq(device);
     char buffer[http::Request::TOTAL_SIZE];
     req.toBuffer(buffer);
     return TcpDriver::send(reinterpret_cast<uint8_t *>(buffer), req.getSize());
@@ -61,6 +65,7 @@ void Client::initHost(const char *ip_addr, const uint16_t port)
     char *host_ptr = host;
     std::strcpy(host_ptr, ip_addr);
     host_ptr += std::strlen(ip_addr);
+    *(host_ptr++) = ':';
     std::strcpy(host_ptr, port_str);
 }
 
@@ -111,7 +116,7 @@ http::Request Client::createConnectReq(const Device *device)
     request.appendHeader(hdr);
 
     // TODO: encrypted body
-    request.appendBody(device->getKey());
+    request.appendBody(device->getId());
 
     return request;
 }
