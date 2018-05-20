@@ -2,12 +2,45 @@
 // Created by mayfa on 8.5.18.
 //
 
-#include "response_parser.hpp"
+#include "response_buffer.hpp"
 #include <cstdlib>
 #include <cstring>
 #include <cctype>
+#include "communication/client.hpp"
 
 namespace http {
+
+char   ResponseBuffer::buffer[BUFF_LEN];
+size_t ResponseBuffer::bufferIdx = 0;
+
+void ResponseBuffer::init()
+{
+    for (size_t i = 0; i < BUFF_LEN; i++) {
+        buffer[i] = '\0';
+    }
+}
+
+/**
+ * Buffs part of HTTP message. Given buffer does not have to contain whole HTTP response.
+ * Part of messages are saved into ResponseBuffer and when whole message is collected,
+ * Client::receiveCb is called.
+ * @param buffer
+ * @param buff_size
+ */
+void ResponseBuffer::buff(const uint8_t *part_buff, const size_t part_buff_size)
+{
+    Response response;
+    if (!parse(reinterpret_cast<const char *>(part_buff), part_buff_size, &response)) {
+        if (part_buff_size + bufferIdx >= BUFF_LEN) {
+            // TODO: Error: reset connection
+        }
+        std::memcpy(buffer + bufferIdx, part_buff, part_buff_size);
+        bufferIdx += part_buff_size;
+    }
+    else {
+        comm::Client::receiveCb(response);
+    }
+}
 
 /**
  * Parses HTTP response.
@@ -16,7 +49,7 @@ namespace http {
  * @param response    ... pointer to an object that will be filled
  * @return false if parsing failed, true on success.
  */
-bool ResponseParser::parse(const char *buffer, const size_t buffer_size, Response *response)
+bool ResponseBuffer::parse(const char *buffer, const size_t buffer_size, Response *response)
 {
     bool ret_val = true;
 	CharStream char_stream(buffer, buffer_size);
@@ -49,7 +82,7 @@ bool ResponseParser::parse(const char *buffer, const size_t buffer_size, Respons
  * @param char_stream
  * @return status code in int
  */
-bool ResponseParser::parseStatusLine(CharStream &char_stream, int *status_code)
+bool ResponseBuffer::parseStatusLine(CharStream &char_stream, int *status_code)
 {
     bool ret_val = true;
     char status_line[3][20];
@@ -69,7 +102,7 @@ bool ResponseParser::parseStatusLine(CharStream &char_stream, int *status_code)
  * @param header [out] ... filled with correct options ie. not not-unknown-type options.
  * @return
  */
-bool ResponseParser::parseHeader(CharStream &char_stream, Header *header)
+bool ResponseBuffer::parseHeader(CharStream &char_stream, Header *header)
 {
     bool ret_val = true;
     while (!char_stream.atEmptyLine() && !char_stream.atEnd()) {
@@ -91,7 +124,7 @@ bool ResponseParser::parseHeader(CharStream &char_stream, Header *header)
  * @param header_option [out] ... may be filled as unknown header option
  * @return false when parsing failed
  */
-bool ResponseParser::parseOptionLine(CharStream &char_stream, HeaderOption *header_option)
+bool ResponseBuffer::parseOptionLine(CharStream &char_stream, HeaderOption *header_option)
 {
     bool ret_val = true;
     char words[2][MAX_OPTION_WORD_LEN];
@@ -114,7 +147,7 @@ bool ResponseParser::parseOptionLine(CharStream &char_stream, HeaderOption *head
     return ret_val;
 }
 
-void ResponseParser::resolveOptionType(const char *word, HeaderOption::Type *type)
+void ResponseBuffer::resolveOptionType(const char *word, HeaderOption::Type *type)
 {
     if (std::strcmp(word, HeaderOption::CONTENT_LENGTH_STR) == 0) {
         *type = HeaderOption::CONTENT_LENGTH;
@@ -130,7 +163,7 @@ void ResponseParser::resolveOptionType(const char *word, HeaderOption::Type *typ
 /**
  * Returns pointer to substring that is trimmed from whitespaces
  */
-char *ResponseParser::trimWhiteSpaces(char *str)
+char *ResponseBuffer::trimWhiteSpaces(char *str)
 {
     while (std::isspace(*str)) {
         str++;

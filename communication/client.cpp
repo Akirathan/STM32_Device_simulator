@@ -3,7 +3,7 @@
 //
 
 #include "client.hpp"
-#include "http/response_parser.hpp"
+#include "http/response_buffer.hpp"
 #include "tcp_driver.hpp"
 
 namespace comm {
@@ -25,11 +25,11 @@ void Client::init(const char *ip_addr, uint16_t port)
     }
 }
 
-void Client::receiveCb(const uint8_t *buff, const size_t buff_size)
+void Client::receiveCb(const http::Response &response)
 {
     switch (state) {
         case AWAIT_CONNECT_RESPONSE:
-            readConnectResponse(buff, buff_size);
+            readConnectResponse(response);
             break;
         case AWAIT_INTERVAL_TIMESTAMP_RESPONSE:break;
         case AWAIT_INTERVALS:break;
@@ -72,32 +72,15 @@ void Client::initHost(const char *ip_addr, const uint16_t port)
 }
 
 /**
- *
- * @param response [out]
- * @return bool whether parsing succeed
- */
-bool Client::readResponse(const uint8_t *buff, const size_t buff_size, http::Response *response)
-{
-    return http::ResponseParser::parse(reinterpret_cast<const char *>(buff), buff_size, response);
-}
-
-/**
  * Response from server should contain server_real_time in body.
  * @param buff      ... received buffer from server.
- * @param buff_size ... received buffer size.
+ * @param response ... received buffer size.
  */
-void Client::readConnectResponse(const uint8_t *buff, const size_t buff_size)
+void Client::readConnectResponse(const http::Response &response)
 {
-    http::Response response;
-    if (!readResponse(buff, buff_size, &response)) {
-        // Send connected request again
+    if (response.getStatusCode() != http::Response::OK) {
         // TODO: error handling
         sendConnectReq(currDevice);
-        return;
-    }
-
-    if (response.getStatusCode() != http::Response::OK) {
-        // ...
         return;
     }
 

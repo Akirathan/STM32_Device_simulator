@@ -6,13 +6,12 @@
 #include "tcp_driver.hpp"
 #include "rt_assert.h"
 #include "client.hpp"
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <poll.h>
 #include <netdb.h>
 #include <unistd.h>
 #include <cstring>
-#include <cstdio>
+#include "http/response_buffer.hpp"
 
 namespace comm {
 
@@ -54,9 +53,12 @@ void TcpDriver::poll()
     struct pollfd poll_fd = {socketFd, POLLIN, 0};
     if (::poll(&poll_fd, 1, 0) > 0) {
         uint8_t buff[512];
-        while (read(socketFd, buff, 512) > 0) {
-            Client::receiveCb(buff, 512);
+        size_t read_num = 0;
+        do {
+            read_num = static_cast<size_t>(read(socketFd, buff, 512));
+            http::ResponseBuffer::buff(buff, read_num);
         }
+        while (read_num > 0);
     }
 }
 

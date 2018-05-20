@@ -21,7 +21,7 @@ set(HTTP_SOURCES
     http/header_option.cpp
     http/request.cpp
     http/response.cpp
-    http/response_parser.cpp
+    http/response_buffer.cpp
 )
 
 set(SOURCE_FILES

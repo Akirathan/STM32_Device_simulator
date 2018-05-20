@@ -34,7 +34,7 @@ private:
 
 public:
     static void init(const char *ip_addr, uint16_t port);
-    static void receiveCb(const uint8_t *buff, const size_t buff_size);
+    static void receiveCb(const http::Response &response);
     static bool sendConnectReq(Device *device);
     static bool sendTemperature(const double temp, const uint32_t time_stamp);
     static bool sendIntervals(const IntervalList &intervals, const uint32_t time_stamp);
@@ -51,8 +51,7 @@ private:
     static Device *currDevice;
 
     static void initHost(const char *ip_addr, const uint16_t port);
-    static bool readResponse(const uint8_t *buff, const size_t buff_size, http::Response *response);
-    static void readConnectResponse(const uint8_t *buff, const size_t buff_size);
+    static void readConnectResponse(const http::Response &response);
     static http::Request createConnectReq(const Device *device);
 };
 
