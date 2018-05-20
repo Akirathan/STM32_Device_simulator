@@ -54,7 +54,7 @@ void CharStream::readUntilDelimiter(char *word, size_t *word_len, const char del
 {
     char c = '\0';
     unsigned long wordIdx = 0;
-    while (c != delimiter && !atEnd()) {
+    while (c != delimiter && !atEndOfLine() && !atEnd()) {
         c = readChar();
         if (c != delimiter) {
             word[wordIdx++] = c;
