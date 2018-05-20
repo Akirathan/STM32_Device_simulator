@@ -12,12 +12,11 @@ namespace http {
 
 char   ResponseBuffer::buffer[BUFF_LEN];
 size_t ResponseBuffer::bufferIdx = 0;
+bool   ResponseBuffer::awaitBodyFlag = false;
 
 void ResponseBuffer::init()
 {
-    for (size_t i = 0; i < BUFF_LEN; i++) {
-        buffer[i] = '\0';
-    }
+    reset();
 }
 
 /**
@@ -29,17 +28,29 @@ void ResponseBuffer::init()
  */
 void ResponseBuffer::buff(const uint8_t *part_buff, const size_t part_buff_size)
 {
-    Response response;
-    if (!parse(reinterpret_cast<const char *>(part_buff), part_buff_size, &response)) {
-        if (part_buff_size + bufferIdx >= BUFF_LEN) {
-            // TODO: Error: reset connection
-        }
-        std::memcpy(buffer + bufferIdx, part_buff, part_buff_size);
-        bufferIdx += part_buff_size;
+    if (part_buff_size + bufferIdx >= BUFF_LEN) {
+        // TODO: Error: reset connection
+        std::fprintf(stderr, "ResponseBuffer: message too large");
+        return;
     }
-    else {
+    std::memcpy(buffer + bufferIdx, part_buff, part_buff_size);
+    bufferIdx += part_buff_size;
+
+    Response response;
+    if (parse(buffer, bufferIdx, &response)) {
+        reset();
         comm::Client::receiveCb(response);
     }
+}
+
+/**
+ * Sets the ResponseBuffer to await also body from server. That means that message
+ * that contains just header without body is considered to be incorrect by
+ * ResponseBuffer.
+ */
+void ResponseBuffer::awaitBody()
+{
+    awaitBodyFlag = true;
 }
 
 /**
@@ -70,6 +81,11 @@ bool ResponseBuffer::parse(const char *buffer, const size_t buffer_size, Respons
     char_stream.readWhiteSpaces();
 
     const char *body = char_stream.getRestOfBuffer();
+
+    if (body == nullptr && awaitBodyFlag) {
+        ret_val = false;
+    }
+
     if (body != nullptr) {
         response->copyIntoBody(body);
     }
@@ -177,5 +193,15 @@ char *ResponseBuffer::trimWhiteSpaces(char *str)
 
     return str;
 }
+
+void ResponseBuffer::reset()
+{
+    for (size_t i = 0; i < BUFF_LEN; i++) {
+        buffer[i] = '\0';
+    }
+    bufferIdx = 0;
+    awaitBodyFlag = false;
+}
+
 
 } // namespace http

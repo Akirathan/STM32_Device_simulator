@@ -56,6 +56,8 @@ bool Client::sendConnectReq(Device *device)
     http::Request req = createConnectReq(device);
     char buffer[http::Request::TOTAL_SIZE];
     req.toBuffer(buffer);
+
+    http::ResponseBuffer::awaitBody();
     return TcpDriver::send(reinterpret_cast<uint8_t *>(buffer), req.getSize());
 }
 
