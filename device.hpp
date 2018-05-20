@@ -7,13 +7,19 @@
 
 #include <string>
 #include "communication/interval_list.hpp"
+#include "communication/i_client_cb_recver.hpp"
 
-class Device {
+/**
+ * Represents one STM device. Time synchronization is not simulated.
+ * Newly set intervals are sent just once.
+ */
+class Device : public comm::IClientCbRecver {
 private:
     static const size_t KEY_LEN = 9;
-    static const size_t ID_LEN = 15;
 
 public:
+    static const size_t ID_LEN = 15;
+
     Device(const char *id, const char *key);
     const char * getKey() const;
     const char * getId() const;
@@ -21,7 +27,10 @@ public:
     void setTemp(uint32_t temp);
     void setIntervals(const comm::IntervalList &interval_list);
     const comm::IntervalList & getIntervals() const;
-    void setConnected();
+    void connectedCb() override;
+    void tempSentCb() override;
+    void intervalsSentCb() override;
+    void intervalsRecvCb(const comm::IntervalList &interval_list) override;
     bool connect();
 
 private:

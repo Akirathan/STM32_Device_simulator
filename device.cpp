@@ -2,8 +2,9 @@
 // Created by mayfa on 14.5.18.
 //
 
-#include <cstring>
 #include "device.hpp"
+#include <cstring>
+#include <iostream>
 #include "communication/client.hpp"
 
 Device::Device(const char *id, const char *key) :
@@ -27,9 +28,24 @@ const char *Device::getId() const
 /**
  * Sets connected state of the device ie. it is connected to the server.
  */
-void Device::setConnected()
+void Device::connectedCb()
 {
     connected = true;
+}
+
+void Device::tempSentCb()
+{
+    std::cout << "Device: tempSentCb" << std::endl;
+}
+
+void Device::intervalsSentCb()
+{
+    std::cout << "Device: intervalsSentCb" << std::endl;
+}
+
+void Device::intervalsRecvCb(const comm::IntervalList &interval_list)
+{
+    std::cout << "Device: intervalsReceiveCb" << std::endl;
 }
 
 /**
@@ -39,7 +55,7 @@ void Device::setConnected()
 bool Device::connect()
 {
     bool ret_val = false;
-    ret_val = comm::Client::sendConnectReq(this);
+    ret_val = comm::Client::sendConnectReq(id);
 }
 
 

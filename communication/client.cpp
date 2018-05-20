@@ -13,14 +13,22 @@ char                  Client::ipAddr[IP_ADDR_LEN];
 uint16_t              Client::port = 0;
 char                  Client::host[HOST_LEN];
 Client::await_state_t Client::state = AWAIT_NONE;
-Device *              Client::currDevice = nullptr;
+char                  Client::deviceId[Device::ID_LEN];
+IClientCbRecver *     Client::clientCbRecver = nullptr;
 
-void Client::init(const char *ip_addr, uint16_t port)
+/**
+ *
+ * @param ip_addr
+ * @param port
+ * @param client_cb_recver ... receiver of all client callbacks, may be NULL.
+ */
+void Client::init(const char *ip_addr, uint16_t port, IClientCbRecver *client_cb_recver)
 {
     if (!initialized) {
         std::strcpy(ipAddr, ip_addr);
         Client::port = port;
         initHost(ip_addr, port);
+        clientCbRecver = client_cb_recver;
         initialized = true;
     }
 }
@@ -42,18 +50,17 @@ void Client::receiveCb(const http::Response &response)
 /**
  * Sends connection request to the server.
  *
- * @param device  ... pointer to device that will be notified when connection is
- *                    successfull.
+ * @param device_id ... device id (TODO: encrypted?)
  * @return false when TCPDriver fails to send data.
  */
-bool Client::sendConnectReq(Device *device)
+bool Client::sendConnectReq(const char *device_id)
 {
-    currDevice = device;
+    std::strcpy(deviceId, device_id);
     state = AWAIT_CONNECT_RESPONSE;
 
     TcpDriver::connect(ipAddr, port);
 
-    http::Request req = createConnectReq(device);
+    http::Request req = createConnectReq(device_id);
     char buffer[http::Request::TOTAL_SIZE];
     req.toBuffer(buffer);
 
@@ -82,22 +89,21 @@ void Client::readConnectResponse(const http::Response &response)
 {
     if (response.getStatusCode() != http::Response::OK) {
         // TODO: error handling
-        sendConnectReq(currDevice);
+        sendConnectReq(deviceId);
         return;
     }
 
     // TODO: parse server_real_time from body.
 
-    currDevice->setConnected();
-    currDevice = nullptr;
+    callConnectedCb();
 }
 
-http::Request Client::createConnectReq(const Device *device)
+http::Request Client::createConnectReq(const char *device_id)
 {
     using namespace http;
 
     char body_len[20];
-    std::sprintf(body_len, "%lu", std::strlen(device->getId()));
+    std::sprintf(body_len, "%lu", std::strlen(device_id));
 
     Request request(Request::POST, CONNECT_URL);
     HeaderOption hdr_option_host(HeaderOption::HOST, host);
@@ -110,11 +116,37 @@ http::Request Client::createConnectReq(const Device *device)
     request.appendHeader(hdr);
 
     // TODO: encrypted body
-    request.appendBody(device->getId());
+    request.appendBody(device_id);
 
     return request;
 }
 
+void Client::callConnectedCb()
+{
+    if (clientCbRecver != nullptr) {
+        clientCbRecver->connectedCb();
+    }
+}
 
+void Client::callTempSentCb()
+{
+    if (clientCbRecver != nullptr) {
+        clientCbRecver->tempSentCb();
+    }
+}
+
+void Client::callIntervalsSentCb()
+{
+    if (clientCbRecver != nullptr) {
+        clientCbRecver->intervalsSentCb();
+    }
+}
+
+void Client::callIntervalsRecvCb(const IntervalList &interval_list)
+{
+    if (clientCbRecver != nullptr) {
+        clientCbRecver->intervalsRecvCb(interval_list);
+    }
+}
 
 } // namespace comm
