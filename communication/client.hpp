@@ -42,7 +42,7 @@ public:
     static bool requestIntervalTimeStamp(uint32_t *time_stamp);
 
 private:
-    static const constexpr char * CONNECT_URL = "/connect";
+    static const constexpr char * CONNECT_URL = "/controllers/connect";
     static bool initialized;
     static char ipAddr[IP_ADDR_LEN];
     static uint16_t port;

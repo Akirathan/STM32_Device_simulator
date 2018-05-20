@@ -15,7 +15,7 @@ namespace http {
 
 class Request {
 private:
-    static const size_t URL_MAX_SIZE = 20;
+    static const size_t URL_MAX_SIZE = 40;
     static const size_t TYPE_MAX_SIZE = 4;
 
 public:

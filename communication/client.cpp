@@ -49,6 +49,8 @@ void Client::receiveCb(const uint8_t *buff, const size_t buff_size)
 bool Client::sendConnectReq(Device *device)
 {
     currDevice = device;
+    state = AWAIT_CONNECT_RESPONSE;
+
     TcpDriver::connect(ipAddr, port);
 
     http::Request req = createConnectReq(device);
