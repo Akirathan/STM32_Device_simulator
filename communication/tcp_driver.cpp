@@ -56,7 +56,9 @@ void TcpDriver::poll()
         size_t read_num = 0;
         do {
             read_num = static_cast<size_t>(read(socketFd, buff, 512));
-            http::ResponseBuffer::buff(buff, read_num);
+            if (read_num > 0) {
+                http::ResponseBuffer::buff(buff, read_num);
+            }
         }
         while (read_num > 0);
     }
