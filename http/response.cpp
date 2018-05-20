@@ -8,9 +8,12 @@
 namespace http {
 
 Response::Response() :
-        statusCode(NONE),
-        body(nullptr)
-{}
+        statusCode(NONE)
+{
+    for (size_t i = 0; i < Body::MAX_SIZE; ++i) {
+        body[i] = '\0';
+    }
+}
 
 void Response::setStatusCode(unsigned int status_code)
 {

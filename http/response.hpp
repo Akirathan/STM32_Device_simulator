@@ -7,6 +7,7 @@
 
 #include <cstddef>
 #include "header.hpp"
+#include "body.hpp"
 
 namespace http {
 
@@ -31,7 +32,7 @@ public:
 private:
 	status_code_t statusCode;
     Header header;
-	char *body;
+	char body[Body::MAX_SIZE];
 
     status_code_t convertStatusCode(unsigned int code);
 };
