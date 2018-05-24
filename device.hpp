@@ -12,6 +12,8 @@
 /**
  * Represents one STM device. Time synchronization is not simulated.
  * Newly set intervals are sent just once.
+ *
+ * Does not handle timestamps of temperature.
  */
 class Device : public comm::IClientCbRecver {
 private:
@@ -21,22 +23,26 @@ public:
     static const size_t ID_LEN = 15;
 
     Device(const char *id, const char *key);
+    /***************** Getters and setters *********************/
     const char * getKey() const;
     const char * getId() const;
     uint32_t getTemp() const;
-    void setTemp(uint32_t temp);
+    void setTemp(double temp);
     void setIntervals(const comm::IntervalList &interval_list);
     const comm::IntervalList & getIntervals() const;
+    /***********************************************************/
+    /*************** Callbacks from client *********************/
     void connectedCb() override;
     void tempSentCb() override;
     void intervalsSentCb() override;
     void intervalsRecvCb(const comm::IntervalList &interval_list) override;
+    /***********************************************************/
     bool connect();
 
 private:
     char key[KEY_LEN];
     char id[ID_LEN];
-    uint32_t temp;
+    double temp;
     comm::IntervalList intervalList;
     bool connected;
 };
