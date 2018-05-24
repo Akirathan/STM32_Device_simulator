@@ -51,6 +51,15 @@ Response::status_code_t Response::convertStatusCode(unsigned int code)
     return ret_val;
 }
 
+size_t Response::getBodySize() const
+{
+    return std::strlen(body);
+}
+
+const char *Response::getBody() const
+{
+    return body;
+}
 
 
 } // namespace http
