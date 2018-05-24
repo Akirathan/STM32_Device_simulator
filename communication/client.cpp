@@ -14,6 +14,10 @@ uint16_t              Client::port = 0;
 char                  Client::host[HOST_LEN];
 Client::await_state_t Client::state = AWAIT_NONE;
 char                  Client::deviceId[Device::ID_LEN];
+double                Client::temperature = 0.0;
+uint32_t              Client::temperatureTimestamp = 0;
+IntervalList          Client::intervalList;
+uint32_t              Client::intervalListTimestamp = 0;
 IClientCbRecver *     Client::clientCbRecver = nullptr;
 
 /**
@@ -39,10 +43,18 @@ void Client::receiveCb(const http::Response &response)
         case AWAIT_CONNECT_RESPONSE:
             readConnectResponse(response);
             break;
-        case AWAIT_INTERVAL_TIMESTAMP_RESPONSE:break;
-        case AWAIT_INTERVALS:break;
-        case AWAIT_INTERVALS_ACK:break;
-        case AWAIT_TEMP_ACK:break;
+        case AWAIT_INTERVAL_TIMESTAMP_RESPONSE:
+            readIntervalTimestampResp(response);
+            break;
+        case AWAIT_INTERVALS:
+            readIntervalsResp(response, intervalListTimestamp);
+            break;
+        case AWAIT_INTERVALS_ACK:
+            readIntervalsAckResp(response);
+            break;
+        case AWAIT_TEMP_ACK:
+            readTempAckResp(response);
+            break;
         case AWAIT_NONE:break;
     }
 }
@@ -60,12 +72,31 @@ bool Client::sendConnectReq(const char *device_id)
 
     TcpDriver::connect(ipAddr, port);
 
-    http::Request req = createConnectReq(device_id);
-    char buffer[http::Request::TOTAL_SIZE];
-    req.toBuffer(buffer);
+    return send(createConnectReq(device_id), true);
+}
 
-    http::ResponseBuffer::awaitBody();
-    return TcpDriver::send(reinterpret_cast<uint8_t *>(buffer), req.getSize());
+/**
+ * Uploads temperature to the server via POST request.
+ * Note that it is not done immediately after calling this method.
+ * @param temp        ... temperature to be uploaded to the server
+ * @param time_stamp  ... timestamp of the temperature
+ */
+void Client::setTemperature(const double temp, const uint32_t time_stamp)
+{
+    temperature = temp;
+    temperatureTimestamp = time_stamp;
+}
+
+/**
+ * Uploads intervals to the server via POST request.
+ * Note that it is not done immediately after calling this method.
+ * @param intervals   ... intervals to be uploaded to the server
+ * @param time_stamp  ... timestamp of the intervals
+ */
+void Client::setIntervals(const IntervalList &intervals, const uint32_t time_stamp)
+{
+    intervalList = intervals;
+    intervalListTimestamp = time_stamp;
 }
 
 void Client::initHost(const char *ip_addr, const uint16_t port)
@@ -81,9 +112,29 @@ void Client::initHost(const char *ip_addr, const uint16_t port)
 }
 
 /**
- * Response from server should contain server_real_time in body.
- * @param buff      ... received buffer from server.
- * @param response ... received buffer size.
+ * Puts the respond into buffer and send it via TcpDriver.
+ * @param request    ... response to send to the server.
+ * @param await_body  ... whether next received message from server should contain body.
+ * @return
+ */
+bool Client::send(const http::Request &request, bool await_body)
+{
+    char buffer[http::Request::TOTAL_SIZE];
+    request.toBuffer(buffer);
+
+    if (await_body) {
+        http::ResponseBuffer::awaitBody();
+    }
+
+    return TcpDriver::send(reinterpret_cast<uint8_t *>(buffer), request.getSize());
+}
+
+/**
+ * Reads connect response from the server. If the response is successfully read,
+ * registered callback is called.
+ * Note that response from server should contain server_real_time in body.
+ *
+ * @param response ... received response from the server.
  */
 void Client::readConnectResponse(const http::Response &response)
 {
@@ -95,19 +146,160 @@ void Client::readConnectResponse(const http::Response &response)
 
     // TODO: parse server_real_time from body.
 
+    http::Request interval_timestamp_req = createIntervalTimestampReq();
+    send(interval_timestamp_req, true);
+
+    state = AWAIT_INTERVAL_TIMESTAMP_RESPONSE;
+
     callConnectedCb();
+}
+
+void Client::readIntervalTimestampResp(const http::Response &response)
+{
+    if (response.getStatusCode() != http::Response::OK) {
+        // TODO: error handling
+        send(createIntervalTimestampReq(), true);
+        return;
+    }
+
+    uint32_t server_timestamp = static_cast<uint32_t>(std::atoi(response.getBody()));
+    if (intervalListTimestamp < server_timestamp) {
+        // Download intervals from server.
+        send(createGetIntervalsReq(), true);
+        state = AWAIT_INTERVALS;
+    }
+    else if (intervalListTimestamp > server_timestamp) {
+        // Upload intervals to server.
+        // TODO: what if intervals are empty?
+        send(createPostIntervalsReq(intervalList), false);
+        state = AWAIT_INTERVALS_ACK;
+        callIntervalsSentCb();
+    }
+    else if (intervalListTimestamp == server_timestamp) {
+        send(createPostTemperature(temperature, temperatureTimestamp), false);
+        state = AWAIT_TEMP_ACK;
+        callTempSentCb();
+    }
+}
+
+/**
+ * Reads response from server that contains intervals. Note that it does not contain
+ * timestamp.
+ * @param response   ... response from the server.
+ * @param time_stamp ... timestamp that was already sent from server.
+ */
+void Client::readIntervalsResp(const http::Response &response, const uint32_t time_stamp)
+{
+    if (response.getStatusCode() != http::Response::OK) {
+        // TODO: error handling
+        send(createGetIntervalsReq(), true);
+        return;
+    }
+
+    IntervalList interval_list =
+        IntervalList::deserialize(reinterpret_cast<uint8_t *>(response.getBody()), response.getBodySize());
+    callIntervalsRecvCb(interval_list);
+
+    intervalList = interval_list;
+    intervalListTimestamp = time_stamp;
+
+    // Send temperature
+    send(createPostTemperature(temperature, temperatureTimestamp), false);
+    state = AWAIT_TEMP_ACK;
+    callTempSentCb();
+}
+
+void Client::readIntervalsAckResp(const http::Response &response)
+{
+    if (response.getStatusCode() != http::Response::OK) {
+        // TODO: error handling
+        send(createPostIntervalsReq(intervalList), false);
+        return;
+    }
+
+    // Send temperature
+    send(createPostTemperature(temperature, temperatureTimestamp), false);
+    state = AWAIT_TEMP_ACK;
+    callTempSentCb();
+}
+
+void Client::readTempAckResp(const http::Response &response)
+{
+    if (response.getStatusCode() != http::Response::OK) {
+        // TODO: error handling
+        send(createPostTemperature(temperature, temperatureTimestamp), false);
+        return;
+    }
+
+    send(createIntervalTimestampReq(), true);
+    state = AWAIT_INTERVAL_TIMESTAMP_RESPONSE;
+    callTempSentCb();
 }
 
 http::Request Client::createConnectReq(const char *device_id)
 {
+    return createPostReq(CONNECT_URL, device_id, "text/plain");
+}
+
+http::Request Client::createIntervalTimestampReq()
+{
+    return createGetReq(INTERVALS_TIMESTAMP_URL);
+}
+
+http::Request Client::createGetIntervalsReq()
+{
+    return createGetReq(INTERVALS_URL);
+}
+
+http::Request Client::createPostIntervalsReq(const IntervalList &interval_list)
+{
+    char buffer[IntervalList::MAX_SIZE];
+    interval_list.serialize(buffer);
+
+    return createPostReq(INTERVALS_URL, buffer, "text/plain");
+}
+
+http::Request Client::createPostTemperature(const double temp, const uint32_t time_stamp)
+{
+    char timestamp_str[10];
+    char temp_str[10];
+    std::sprintf(temp_str, "%f", temp);
+    std::sprintf(timestamp_str, "%u", time_stamp);
+    size_t timestamp_len = std::strlen(timestamp_str);
+    size_t temp_len = std::strlen(temp_str);
+
+    // concat timestamp and temp
+    char body[25];
+    std::strcpy(body, timestamp_str);
+    *(body + timestamp_len) = '\n';
+    std::strcpy(body + timestamp_len + 1, temp_str);
+
+    return createPostReq(TEMP_URL, body, "text/plain");
+}
+
+http::Request Client::createGetReq(const char *url)
+{
+    using namespace http;
+
+    Request request(Request::GET, url);
+    HeaderOption hdr_option_host(HeaderOption::HOST, host);
+    Header hdr;
+    hdr.appendOption(hdr_option_host);
+    request.appendHeader(hdr);
+
+    return request;
+}
+
+http::Request Client::createPostReq(const char *url, const char *body, const char *content_type)
+{
     using namespace http;
 
     char body_len[20];
-    std::sprintf(body_len, "%lu", std::strlen(device_id));
+    std::sprintf(body_len, "%lu", std::strlen(body));
 
-    Request request(Request::POST, CONNECT_URL);
+    Request request(Request::POST, url);
     HeaderOption hdr_option_host(HeaderOption::HOST, host);
-    HeaderOption hdr_option_content_type(HeaderOption::CONTENT_TYPE, "text/plain");
+    HeaderOption hdr_option_content_type(HeaderOption::CONTENT_TYPE, content_type);
     HeaderOption hdr_option_content_length(HeaderOption::CONTENT_LENGTH, body_len);
     Header hdr;
     hdr.appendOption(hdr_option_host);
@@ -115,9 +307,7 @@ http::Request Client::createConnectReq(const char *device_id)
     hdr.appendOption(hdr_option_content_length);
     request.appendHeader(hdr);
 
-    // TODO: encrypted body
-    request.appendBody(device_id);
-
+    request.appendBody(body);
     return request;
 }
 
@@ -148,5 +338,7 @@ void Client::callIntervalsRecvCb(const IntervalList &interval_list)
         clientCbRecver->intervalsRecvCb(interval_list);
     }
 }
+
+
 
 } // namespace comm
