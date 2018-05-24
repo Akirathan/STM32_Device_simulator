@@ -38,7 +38,7 @@ public:
     static void receiveCb(const http::Response &response);
     static bool sendConnectReq(const char *device_id);
     static void setTemperature(const double temp, const uint32_t time_stamp);
-    static void setIntervals(const IntervalList &intervals, const uint32_t time_stamp);
+    static void setIntervals(const IntervalList &intervals);
 
 private:
     static const constexpr char * CONNECT_URL = "/controllers/connect";
@@ -57,7 +57,10 @@ private:
     static uint32_t temperatureTimestamp;
     /// Interval list set by device that will be posted to server when appropriate.
     static IntervalList intervalList;
-    static uint32_t intervalListTimestamp;
+    /// Temporary storage for intervals timestamp from server that is read in
+    /// readIntervalTimestampResp. Note that this member is necessary because
+    /// server does not send timestamp with intervals in one response.
+    static uint32_t tempIntervalsTimestamp;
     static IClientCbRecver *clientCbRecver;
 
     static void initHost(const char *ip_addr, const uint16_t port);

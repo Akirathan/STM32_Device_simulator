@@ -17,7 +17,7 @@ char                  Client::deviceId[Device::ID_LEN];
 double                Client::temperature = 0.0;
 uint32_t              Client::temperatureTimestamp = 0;
 IntervalList          Client::intervalList;
-uint32_t              Client::intervalListTimestamp = 0;
+uint32_t              Client::tempIntervalsTimestamp = 0;
 IClientCbRecver *     Client::clientCbRecver = nullptr;
 
 /**
@@ -47,7 +47,7 @@ void Client::receiveCb(const http::Response &response)
             readIntervalTimestampResp(response);
             break;
         case AWAIT_INTERVALS:
-            readIntervalsResp(response, intervalListTimestamp);
+            readIntervalsResp(response, tempIntervalsTimestamp);
             break;
         case AWAIT_INTERVALS_ACK:
             readIntervalsAckResp(response);
@@ -91,12 +91,10 @@ void Client::setTemperature(const double temp, const uint32_t time_stamp)
  * Uploads intervals to the server via POST request.
  * Note that it is not done immediately after calling this method.
  * @param intervals   ... intervals to be uploaded to the server
- * @param time_stamp  ... timestamp of the intervals
  */
-void Client::setIntervals(const IntervalList &intervals, const uint32_t time_stamp)
+void Client::setIntervals(const IntervalList &intervals)
 {
     intervalList = intervals;
-    intervalListTimestamp = time_stamp;
 }
 
 void Client::initHost(const char *ip_addr, const uint16_t port)
@@ -163,19 +161,21 @@ void Client::readIntervalTimestampResp(const http::Response &response)
     }
 
     uint32_t server_timestamp = static_cast<uint32_t>(std::atoi(response.getBody()));
-    if (intervalListTimestamp < server_timestamp) {
+    // Temporarily store intervals timestamp from server.
+    tempIntervalsTimestamp = server_timestamp;
+    if (intervalList.getTimestamp() < server_timestamp) {
         // Download intervals from server.
         send(createGetIntervalsReq(), true);
         state = AWAIT_INTERVALS;
     }
-    else if (intervalListTimestamp > server_timestamp) {
+    else if (intervalList.getTimestamp() > server_timestamp) {
         // Upload intervals to server.
         // TODO: what if intervals are empty?
         send(createPostIntervalsReq(intervalList), false);
         state = AWAIT_INTERVALS_ACK;
         callIntervalsSentCb();
     }
-    else if (intervalListTimestamp == server_timestamp) {
+    else if (intervalList.getTimestamp() == server_timestamp) {
         send(createPostTemperature(temperature, temperatureTimestamp), false);
         state = AWAIT_TEMP_ACK;
         callTempSentCb();
@@ -197,11 +197,10 @@ void Client::readIntervalsResp(const http::Response &response, const uint32_t ti
     }
 
     IntervalList interval_list =
-        IntervalList::deserialize(reinterpret_cast<uint8_t *>(response.getBody()), response.getBodySize());
+        IntervalList::deserialize(reinterpret_cast<const uint8_t *>(response.getBody()), response.getBodySize());
     callIntervalsRecvCb(interval_list);
 
     intervalList = interval_list;
-    intervalListTimestamp = time_stamp;
 
     // Send temperature
     send(createPostTemperature(temperature, temperatureTimestamp), false);
