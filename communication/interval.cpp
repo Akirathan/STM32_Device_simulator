@@ -30,17 +30,15 @@ Interval::Interval() :
         Interval(0, 0, 0)
 {}
 
-void Interval::serialize(uint8_t *buffer, size_t *size) const
+void Interval::serialize(char *buffer) const
 {
     *((uint16_t *) buffer) = fromTime;
     buffer += 2;
     *((uint16_t *) buffer) = toTime;
     buffer += 2;
     *((uint16_t *) buffer) = temp;
-
-    if (size != nullptr) {
-        *size = SIZE;
-    }
+    buffer += 2;
+    *buffer = '\0';
 }
 
 void Interval::setFromTime(const uint16_t fromTime)

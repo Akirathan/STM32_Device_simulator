@@ -17,7 +17,7 @@ public:
 
     Interval(const uint16_t fromTime, const uint16_t toTime, const uint16_t temp);
     Interval();
-    void serialize(uint8_t *buffer, size_t *size) const;
+    void serialize(char *buffer) const;
     void setFromTime(const uint16_t fromTime);
     void setToTime(const uint16_t toTime);
     void setTemp(const uint16_t temp);
