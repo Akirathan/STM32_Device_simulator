@@ -40,19 +40,13 @@ void IntervalList::addInterval(const Interval &interval)
  * Serializes this IntervalList into given buffer.
  *
  * @param buffer     ... buffer to serialize this IntervalList in.
- * @param size [out] ... number of filled bytes into buffer.
  */
-void IntervalList::serialize(uint8_t *buffer, size_t *size) const
+void IntervalList::serialize(char *buffer) const
 {
     size_t buff_idx = 0;
     for (size_t i = 0; i < intervalsIdx; ++i) {
-        size_t interval_size = 0;
-        intervals[i].serialize(buffer + buff_idx, &interval_size);
-        buff_idx += interval_size;
-    }
-
-    if (size != nullptr) {
-        *size = buff_idx;
+        intervals[i].serialize(buffer + buff_idx);
+        buff_idx += Interval::SIZE;
     }
 }
 
