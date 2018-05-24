@@ -30,6 +30,11 @@ void IntervalList::setTimestamp(uint32_t time_stamp)
     timeStamp = time_stamp;
 }
 
+uint32_t IntervalList::getTimestamp() const
+{
+    return timeStamp;
+}
+
 void IntervalList::addInterval(const Interval &interval)
 {
     rt_assert(intervalsIdx <= MAX_NUM, "IntervalList: too much intervals");

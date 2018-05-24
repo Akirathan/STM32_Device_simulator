@@ -20,6 +20,7 @@ public:
 
     IntervalList();
     void setTimestamp(uint32_t time_stamp);
+    uint32_t getTimestamp() const;
     void addInterval(const Interval &interval);
     void serialize(char *buffer) const;
 
