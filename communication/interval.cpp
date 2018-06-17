@@ -12,15 +12,15 @@ Interval Interval::deserialize(const uint8_t *buffer, const size_t buff_size)
 {
     rt_assert(buff_size == SIZE, "Interval: wrong size of buffer");
 
-    uint16_t from_time = *((const uint16_t *) buffer);
-    buffer += 2;
-    uint16_t to_time = *((const uint16_t *) buffer);
-    buffer += 2;
-    uint16_t temp = *((const uint16_t *) buffer);
+    uint32_t from_time = *((const uint32_t *) buffer);
+    buffer += 4;
+    uint32_t to_time = *((const uint32_t *) buffer);
+    buffer += 4;
+    uint32_t temp = *((const uint32_t *) buffer);
     return Interval(from_time, to_time, temp);
 }
 
-Interval::Interval(const uint16_t fromTime, const uint16_t toTime, const uint16_t temp) :
+Interval::Interval(const uint32_t fromTime, const uint32_t toTime, const uint32_t temp) :
         fromTime(fromTime),
         toTime(toTime),
         temp(temp)
@@ -32,26 +32,26 @@ Interval::Interval() :
 
 void Interval::serialize(char *buffer) const
 {
-    *((uint16_t *) buffer) = fromTime;
-    buffer += 2;
-    *((uint16_t *) buffer) = toTime;
-    buffer += 2;
-    *((uint16_t *) buffer) = temp;
-    buffer += 2;
+    *((uint32_t *) buffer) = fromTime;
+    buffer += 4;
+    *((uint32_t *) buffer) = toTime;
+    buffer += 4;
+    *((uint32_t *) buffer) = temp;
+    buffer += 4;
     *buffer = '\0';
 }
 
-void Interval::setFromTime(const uint16_t fromTime)
+void Interval::setFromTime(const uint32_t fromTime)
 {
     this->fromTime = fromTime;
 }
 
-void Interval::setToTime(const uint16_t toTime)
+void Interval::setToTime(const uint32_t toTime)
 {
     this->toTime = toTime;
 }
 
-void Interval::setTemp(const uint16_t temp)
+void Interval::setTemp(const uint32_t temp)
 {
     this->temp = temp;
 }
