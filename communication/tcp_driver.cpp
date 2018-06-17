@@ -37,6 +37,8 @@ bool TcpDriver::send(const uint8_t *buff, const size_t buff_len)
 {
     connect(ipAddr, port);
     ssize_t sent = ::send(socketFd, buff, buff_len, 0);
+    disconnect();
+    
     return sent == buff_len;
 }
 
@@ -75,6 +77,11 @@ void TcpDriver::connect(const char *ip_addr, const uint16_t port)
     if (::connect(socketFd, res->ai_addr, res->ai_addrlen) != 0) {
         std::fprintf(stderr, "connect");
     }
+}
+
+void TcpDriver::disconnect()
+{
+    close(socketFd);
 }
 
 } // namespace comm

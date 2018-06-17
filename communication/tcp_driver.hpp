@@ -28,6 +28,7 @@ private:
     static uint16_t port;
 
     static void connect(const char *ip_addr, const uint16_t port);
+    static void disconnect();
 };
 
 } // namespace comm
