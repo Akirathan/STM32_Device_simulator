@@ -70,8 +70,6 @@ bool Client::sendConnectReq(const char *device_id)
     std::strcpy(deviceId, device_id);
     state = AWAIT_CONNECT_RESPONSE;
 
-    TcpDriver::connect(ipAddr, port);
-
     return send(createConnectReq(device_id), true);
 }
 

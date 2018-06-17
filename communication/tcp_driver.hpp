@@ -15,13 +15,19 @@ namespace comm {
  */
 class TcpDriver {
 public:
-    static void connect(const char *ip_addr, const uint16_t port);
+    static void init(const char *ip_addr, uint16_t port);
     static bool send(const uint8_t *buff, const size_t buff_len);
     static void poll();
 
 private:
+    static const size_t IP_ADDR_LEN = 16;
+
     static int socketFd;
-    static bool connected;
+    static bool initialized;
+    static char ipAddr[IP_ADDR_LEN];
+    static uint16_t port;
+
+    static void connect(const char *ip_addr, const uint16_t port);
 };
 
 } // namespace comm

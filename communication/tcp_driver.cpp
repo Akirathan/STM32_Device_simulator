@@ -15,32 +15,27 @@
 
 namespace comm {
 
-int TcpDriver::socketFd = 0;
-bool TcpDriver::connected = false;
+int       TcpDriver::socketFd = 0;
+bool      TcpDriver::initialized = false;
+char      TcpDriver::ipAddr[IP_ADDR_LEN];
+uint16_t  TcpDriver::port = 0;
 
-void TcpDriver::connect(const char *ip_addr, const uint16_t port)
+void TcpDriver::init(const char *ip_addr, uint16_t port)
 {
-    struct addrinfo hints;
-    std::memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-
-    char port_str[7];
-    std::sprintf(port_str, "%d", port);
-    struct addrinfo *res;
-    getaddrinfo(ip_addr, port_str, &hints, &res);
-
-    socketFd = socket(AF_INET, SOCK_STREAM, 0);
-    if (::connect(socketFd, res->ai_addr, res->ai_addrlen) != 0) {
-        std::fprintf(stderr, "connect");
-    }
-
-    connected = true;
+    std::strcpy(ipAddr, ip_addr);
+    TcpDriver::port = port;
+    initialized = true;
 }
 
+/**
+ * Supposes that connection must be established every time client want to send something.
+ * @param buff
+ * @param buff_len
+ * @return
+ */
 bool TcpDriver::send(const uint8_t *buff, const size_t buff_len)
 {
-    rt_assert(connected, "TcpDriver: not connected");
+    connect(ipAddr, port);
     ssize_t sent = ::send(socketFd, buff, buff_len, 0);
     return sent == buff_len;
 }
@@ -61,6 +56,24 @@ void TcpDriver::poll()
             }
         }
         while (read_num > 0);
+    }
+}
+
+void TcpDriver::connect(const char *ip_addr, const uint16_t port)
+{
+    struct addrinfo hints;
+    std::memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+
+    char port_str[7];
+    std::sprintf(port_str, "%d", port);
+    struct addrinfo *res;
+    getaddrinfo(ip_addr, port_str, &hints, &res);
+
+    socketFd = socket(AF_INET, SOCK_STREAM, 0);
+    if (::connect(socketFd, res->ai_addr, res->ai_addrlen) != 0) {
+        std::fprintf(stderr, "connect");
     }
 }
 
