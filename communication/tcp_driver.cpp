@@ -28,16 +28,21 @@ void TcpDriver::init(const char *ip_addr, uint16_t port)
 }
 
 /**
- * Supposes that connection must be established every time client want to send something.
+ * Supposes that connection must be established every time client wants to send something.
  * @param buff
  * @param buff_len
  * @return
  */
 bool TcpDriver::send(const uint8_t *buff, const size_t buff_len)
 {
+    rt_assert(initialized, "TcpDriver must be initialized first");
+    
     connect(ipAddr, port);
     ssize_t sent = ::send(socketFd, buff, buff_len, 0);
-    disconnect();
+    if (sent == buff_len) {
+        int ret_val = shutdown(socketFd, SHUT_WR);
+        rt_assert(ret_val == 0, "shutdown failed");
+    }
     
     return sent == buff_len;
 }
