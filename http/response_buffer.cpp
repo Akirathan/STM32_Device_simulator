@@ -7,6 +7,7 @@
 #include <cstring>
 #include <cctype>
 #include "communication/client.hpp"
+#include "communication/tcp_driver.hpp"
 
 namespace http {
 
@@ -39,6 +40,7 @@ void ResponseBuffer::buff(const uint8_t *part_buff, const size_t part_buff_size)
     Response response;
     if (parse(buffer, bufferIdx, &response)) {
         reset();
+        comm::TcpDriver::wholeMessageReceivedCb();
         comm::Client::receiveCb(response);
     }
 }

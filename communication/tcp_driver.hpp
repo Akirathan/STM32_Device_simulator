@@ -18,6 +18,7 @@ public:
     static void init(const char *ip_addr, uint16_t port);
     static bool send(const uint8_t *buff, const size_t buff_len);
     static void poll();
+    static void wholeMessageReceivedCb();
 
 private:
     static const size_t IP_ADDR_LEN = 16;

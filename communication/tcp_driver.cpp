@@ -66,6 +66,14 @@ void TcpDriver::poll()
     }
 }
 
+/**
+ * "Whole HTTP message received" callback called from ResponseBuffer.
+ */
+void TcpDriver::wholeMessageReceivedCb()
+{
+    disconnect();
+}
+
 void TcpDriver::connect(const char *ip_addr, const uint16_t port)
 {
     struct addrinfo hints;
