@@ -16,6 +16,8 @@
 class CharStream {
 public:
 	CharStream(const char *buffer, const size_t buffer_size);
+    const size_t getBufferSize() const;
+    size_t getBufferIdx() const;
 	char readChar();
 	void readWord(char *word, size_t *word_len);
     void readUntilDelimiter(char *word, size_t *word_len, const char delimiter);
@@ -90,7 +92,7 @@ public:
 private:
 	const char *buffer;
 	const size_t bufferSize;
-	unsigned long bufferIdx;
+	size_t bufferIdx;
     bool isWhiteSpace(char c) const;
     void unreadChar();
     bool atEndOfLine() const;

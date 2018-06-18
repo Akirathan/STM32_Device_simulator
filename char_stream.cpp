@@ -11,6 +11,16 @@ CharStream::CharStream(const char *buffer, const size_t buffer_size) :
     bufferIdx(0)
 {}
 
+const size_t CharStream::getBufferSize() const
+{
+    return bufferSize;
+}
+
+size_t CharStream::getBufferIdx() const
+{
+    return bufferIdx;
+}
+
 char CharStream::readChar()
 {
     if (bufferIdx >= bufferSize) {
