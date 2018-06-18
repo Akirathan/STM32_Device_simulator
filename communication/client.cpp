@@ -158,7 +158,9 @@ void Client::readIntervalTimestampResp(const http::Response &response)
         return;
     }
 
-    uint32_t server_timestamp = static_cast<uint32_t>(std::atoi(response.getBody()));
+    uint32_t server_timestamp = static_cast<uint32_t>(std::atoi(
+            reinterpret_cast<const char *>(response.getBody())
+    ));
     // Temporarily store intervals timestamp from server.
     tempIntervalsTimestamp = server_timestamp;
     if (intervalList.getTimestamp() < server_timestamp) {
@@ -195,7 +197,7 @@ void Client::readIntervalsResp(const http::Response &response, const uint32_t ti
     }
 
     IntervalList interval_list =
-        IntervalList::deserialize(reinterpret_cast<const uint8_t *>(response.getBody()), response.getBodySize());
+        IntervalList::deserialize(response.getBody(), response.getBodySize());
     callIntervalsRecvCb(interval_list);
 
     intervalList = interval_list;
