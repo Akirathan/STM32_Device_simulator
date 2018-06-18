@@ -83,13 +83,14 @@ bool ResponseBuffer::parse(const char *buffer, const size_t buffer_size, Respons
     char_stream.readWhiteSpaces();
 
     const char *body = char_stream.getRestOfBuffer();
+    const size_t body_len = char_stream.getBufferSize() - char_stream.getBufferIdx();
 
     if (body == nullptr && awaitBodyFlag) {
         ret_val = false;
     }
 
     if (body != nullptr) {
-        response->copyIntoBody(body);
+        response->copyIntoBody(reinterpret_cast<const uint8_t *>(body), body_len);
     }
 
     return ret_val;
