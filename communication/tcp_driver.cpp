@@ -38,13 +38,11 @@ bool TcpDriver::send(const uint8_t *buff, const size_t buff_len)
     rt_assert(initialized, "TcpDriver must be initialized first");
     
     connect(ipAddr, port);
-    ssize_t sent = ::send(socketFd, buff, buff_len, 0);
-    if (sent == buff_len) {
-        int ret_val = shutdown(socketFd, SHUT_WR);
-        rt_assert(ret_val == 0, "shutdown failed");
-    }
-    
-    return sent == buff_len;
+    sendAll(buff, buff_len);
+    int ret_val = shutdown(socketFd, SHUT_WR);
+    rt_assert(ret_val == 0, "shutdown failed");
+
+    return true;
 }
 
 /**
@@ -95,6 +93,14 @@ void TcpDriver::connect(const char *ip_addr, const uint16_t port)
 void TcpDriver::disconnect()
 {
     close(socketFd);
+}
+
+void TcpDriver::sendAll(const uint8_t *buff, const size_t buff_len)
+{
+    ssize_t sent = 0;
+    while (sent != buff_len) {
+        sent += ::send(socketFd, buff, buff_len, 0);
+    }
 }
 
 } // namespace comm

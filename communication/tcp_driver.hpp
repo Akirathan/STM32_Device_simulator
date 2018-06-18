@@ -30,6 +30,7 @@ private:
 
     static void connect(const char *ip_addr, const uint16_t port);
     static void disconnect();
+    static void sendAll(const uint8_t *buff, const size_t buff_len);
 };
 
 } // namespace comm
