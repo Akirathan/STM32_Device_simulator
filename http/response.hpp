@@ -6,6 +6,7 @@
 #define HTTP_COMMUNICATOR_HTTP_RESPONSE_HPP
 
 #include <cstddef>
+#include <cstdint>
 #include "header.hpp"
 #include "body.hpp"
 
@@ -25,14 +26,15 @@ public:
     Response();
     void setStatusCode(unsigned int status_code);
 	status_code_t getStatusCode() const;
-    void copyIntoBody(const char *newBody);
+    void copyIntoBody(const uint8_t *buff, const size_t buff_size);
     void setHeader(const Header &header);
 	size_t getBodySize() const;
-	const char *getBody() const;
+	const uint8_t *getBody() const;
 private:
 	status_code_t statusCode;
     Header header;
-	char body[Body::MAX_SIZE];
+	uint8_t body[Body::MAX_SIZE];
+    size_t bodySize;
 
     status_code_t convertStatusCode(unsigned int code);
 };

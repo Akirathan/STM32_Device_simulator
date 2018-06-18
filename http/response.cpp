@@ -8,7 +8,8 @@
 namespace http {
 
 Response::Response() :
-        statusCode(NONE)
+        statusCode(NONE),
+        bodySize(0)
 {
     for (size_t i = 0; i < Body::MAX_SIZE; ++i) {
         body[i] = '\0';
@@ -25,9 +26,10 @@ Response::status_code_t Response::getStatusCode() const
     return statusCode;
 }
 
-void Response::copyIntoBody(const char *newBody)
+void Response::copyIntoBody(const uint8_t *buff, const size_t buff_size)
 {
-    std::strcpy(body, newBody);
+    std::memcpy(body, buff, buff_size);
+    bodySize = buff_size;
 }
 
 void Response::setHeader(const Header &header)
@@ -53,10 +55,10 @@ Response::status_code_t Response::convertStatusCode(unsigned int code)
 
 size_t Response::getBodySize() const
 {
-    return std::strlen(body);
+    return bodySize;
 }
 
-const char *Response::getBody() const
+const uint8_t *Response::getBody() const
 {
     return body;
 }
