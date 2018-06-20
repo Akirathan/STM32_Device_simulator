@@ -75,23 +75,22 @@ const comm::IntervalList &Device::getIntervals() const
  */
 void Device::connectedCb()
 {
-    connected = true;
-    std::cout << "Device: connectedCb" << std::endl;
+    //std::cout << "Device: connectedCb" << std::endl;
 }
 
 void Device::tempSentCb()
 {
-    std::cout << "Device: tempSentCb" << std::endl;
+    //std::cout << "Device: tempSentCb" << std::endl;
 }
 
 void Device::intervalsSentCb()
 {
-    std::cout << "Device: intervalsSentCb" << std::endl;
+    //std::cout << "Device: intervalsSentCb" << std::endl;
 }
 
 void Device::intervalsRecvCb(const comm::IntervalList &interval_list)
 {
-    std::cout << "Device: intervalsReceiveCb" << std::endl;
+    //std::cout << "Device: intervalsReceiveCb" << std::endl;
 }
 
 /**
