@@ -16,7 +16,7 @@ using namespace std;
 Cli::Cli(Device &device) :
     device(device)
 {
-
+    prompt();
 }
 
 void Cli::poll()
@@ -26,6 +26,8 @@ void Cli::poll()
         string line;
         getline(cin, line);
         parseCommand(line);
+
+        prompt();
     }
 }
 
@@ -40,10 +42,18 @@ void Cli::printHelp() const
               << "  get intervals" << endl;
 }
 
+void Cli::prompt() const
+{
+    cout << "> " << flush;
+}
+
 void Cli::parseCommand(const string &line)
 {
     vector<string> line_items = splitLine(line);
-    if (line_items[0] == "connect") {
+    if (line_items[0] == "help") {
+        printHelp();
+    }
+    else if (line_items[0] == "connect") {
         connectDevice();
     }
     else if (line_items[0] == "disconnect") {

@@ -18,6 +18,7 @@ private:
     Device & device;
 
     void printHelp() const;
+    void prompt() const;
     void parseCommand(const std::string &line);
     void parseSetIntervalsCommand(const std::vector<std::string> &line_items);
     std::vector<std::string> splitLine(const std::string &line) const;
