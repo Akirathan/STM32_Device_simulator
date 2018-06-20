@@ -42,6 +42,24 @@ void IntervalList::addInterval(const Interval &interval)
 }
 
 /**
+ * Returns interval at specified index.
+ * @param index
+ * @return may return nullptr if specified index is out of range
+ */
+const Interval * IntervalList::getInterval(size_t index) const
+{
+    if (index >= intervalsIdx) {
+        return nullptr;
+    }
+    return intervals + index;
+}
+
+size_t IntervalList::getIntervalsCount() const
+{
+    return intervalsIdx;
+}
+
+/**
  * Serializes this IntervalList into given buffer.
  *
  * @param buffer     ... buffer to serialize this IntervalList in.
