@@ -8,6 +8,8 @@
 #include <sstream>
 #include <vector>
 #include "cli.hpp"
+#include "communication/interval_list.hpp"
+#include "communication/interval.hpp"
 
 using namespace std;
 
@@ -52,7 +54,28 @@ void Cli::parseCommand(const string &line)
         setTemperature(temp);
     }
     else if (line_items[0] == "set" && line_items[1] == "intervals") {
+        line_items.erase(line_items.begin(), line_items.begin() + 1);
+        parseSetIntervalsCommand(line_items);
     }
+}
+
+void Cli::parseSetIntervalsCommand(const std::vector<std::string> &line_items)
+{
+    if (line_items.size() % 3 != 0) {
+        cerr << "Wrong format of intervals" << endl;
+        return;
+    }
+
+    comm::IntervalList interval_list;
+    for (size_t i = 0; i < line_items.size(); i += 3) {
+        uint32_t from_time = parseTime(line_items[0]);
+        uint32_t to_time = parseTime(line_items[1]);
+        uint32_t temp = static_cast<uint32_t>(stoul(line_items[2]));
+        comm::Interval interval(from_time, to_time, temp);
+        interval_list.addInterval(interval);
+    }
+
+    setIntervals(interval_list);
 }
 
 vector<string> Cli::splitLine(const string &line) const
@@ -68,6 +91,17 @@ vector<string> Cli::splitLine(const string &line) const
     while (istringstream);
 
     return line_items;
+}
+
+uint32_t Cli::parseTime(const std::string &str)
+{
+    istringstream iss(str);
+    string hours;
+    string minutes;
+    getline(iss, hours, ':');
+    getline(iss, minutes, ':');
+
+    return static_cast<uint32_t>(stoul(hours, nullptr) + stoul(minutes, nullptr) * 60);
 }
 
 void Cli::connectDevice()
@@ -90,5 +124,11 @@ void Cli::setTemperature(double temp)
 {
     device.setTemp(temp);
     cout << "Temperature set" << endl;
+}
+
+void Cli::setIntervals(const comm::IntervalList &interval_list)
+{
+    device.setIntervals(interval_list);
+    cout << "Intervals set" << endl;
 }
 

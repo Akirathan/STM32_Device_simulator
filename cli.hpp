@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include "device.hpp"
+#include "communication/interval_list.hpp"
 
 class Cli {
 public:
@@ -18,11 +19,14 @@ private:
 
     void printHelp() const;
     void parseCommand(const std::string &line);
+    void parseSetIntervalsCommand(const std::vector<std::string> &line_items);
     std::vector<std::string> splitLine(const std::string &line) const;
+    uint32_t parseTime(const std::string &str);
 
     void connectDevice();
     void disconnectDevice();
     void setTemperature(double temp);
+    void setIntervals(const comm::IntervalList &interval_list);
 };
 
 #endif //DEVICE_SIMULATOR_CLI_HPP
