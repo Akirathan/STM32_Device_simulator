@@ -57,6 +57,15 @@ void Cli::parseCommand(const string &line)
         line_items.erase(line_items.begin(), line_items.begin() + 1);
         parseSetIntervalsCommand(line_items);
     }
+    else if (line_items[0] == "get" && line_items[1] == "temp") {
+        getTemperature();
+    }
+    else if (line_items[0] == "get" && line_items[1] == "intervals") {
+        getIntervals();
+    }
+    else {
+        printHelp();
+    }
 }
 
 void Cli::parseSetIntervalsCommand(const std::vector<std::string> &line_items)
@@ -130,5 +139,29 @@ void Cli::setIntervals(const comm::IntervalList &interval_list)
 {
     device.setIntervals(interval_list);
     cout << "Intervals set" << endl;
+}
+
+void Cli::getTemperature()
+{
+    cout << "Device temperature: " + to_string(device.getTemp()) << endl;
+}
+
+void Cli::getIntervals()
+{
+    cout << "Intervals: ";
+    const comm::IntervalList &interval_list = device.getIntervals();
+    for (size_t i = 0; i < interval_list.getIntervalsCount(); i++) {
+        const comm::Interval *interval = interval_list.getInterval(i);
+
+        int from_hours = interval->getFromTime() / 60 * 60;
+        int from_minutes = interval->getFromTime() / 60;
+        int to_hours = interval->getToTime() / 60 * 60;
+        int to_minutes = interval->getToTime() / 60;
+
+        cout << to_string(from_hours) << ":" << to_string(from_minutes) << " "
+             << to_string(to_hours) << ":" << to_string(to_minutes) << " "
+             << to_string(interval->getTemp()) << ",";
+    }
+    cout << endl;
 }
 

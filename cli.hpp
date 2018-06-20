@@ -27,6 +27,8 @@ private:
     void disconnectDevice();
     void setTemperature(double temp);
     void setIntervals(const comm::IntervalList &interval_list);
+    void getTemperature();
+    void getIntervals();
 };
 
 #endif //DEVICE_SIMULATOR_CLI_HPP
