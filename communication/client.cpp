@@ -2,6 +2,7 @@
 // Created by mayfa on 14.5.18.
 //
 
+#include "rt_assert.h"
 #include "client.hpp"
 #include "http/response_buffer.hpp"
 #include "tcp_driver.hpp"
@@ -9,6 +10,7 @@
 namespace comm {
 
 bool                  Client::initialized = false;
+bool                  Client::connected = false;
 char                  Client::ipAddr[IP_ADDR_LEN];
 uint16_t              Client::port = 0;
 char                  Client::host[HOST_LEN];
@@ -39,6 +41,8 @@ void Client::init(const char *ip_addr, uint16_t port, IClientCbRecver *client_cb
 
 void Client::receiveCb(const http::Response &response)
 {
+    rt_assert(connected, "Client must be connected before receiving anything");
+
     switch (state) {
         case AWAIT_CONNECT_RESPONSE:
             readConnectResponse(response);
@@ -68,9 +72,20 @@ void Client::receiveCb(const http::Response &response)
 bool Client::sendConnectReq(const char *device_id)
 {
     std::strcpy(deviceId, device_id);
+    connected = true;
     state = AWAIT_CONNECT_RESPONSE;
 
     return send(createConnectReq(device_id), true);
+}
+
+void Client::disconnect()
+{
+    connected = false;
+}
+
+bool Client::isConnected()
+{
+    return connected;
 }
 
 /**
@@ -338,7 +353,6 @@ void Client::callIntervalsRecvCb(const IntervalList &interval_list)
         clientCbRecver->intervalsRecvCb(interval_list);
     }
 }
-
 
 
 } // namespace comm

@@ -37,6 +37,8 @@ public:
     static void init(const char *ip_addr, uint16_t port, IClientCbRecver *client_cb_recver);
     static void receiveCb(const http::Response &response);
     static bool sendConnectReq(const char *device_id);
+    static void disconnect();
+    static bool isConnected();
     static void setTemperature(const double temp, const uint32_t time_stamp);
     static void setIntervals(const IntervalList &intervals);
 
@@ -47,6 +49,7 @@ private:
     static const constexpr char * INTERVALS_TIMESTAMP_URL = "/controllers/config/intervals/timestamp";
 
     static bool initialized;
+    static bool connected;
     static char ipAddr[IP_ADDR_LEN];
     static uint16_t port;
     static char host[HOST_LEN];
