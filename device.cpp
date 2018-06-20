@@ -5,10 +5,12 @@
 #include "device.hpp"
 #include <cstring>
 #include <iostream>
+#include <chrono>
 #include "communication/client.hpp"
 
 Device::Device(const char *id, const char *key) :
         temp(0.0),
+        tempTimestamp(0),
         connected(false)
 {
     std::strcpy(this->id, id);
@@ -44,8 +46,10 @@ double Device::getTemp() const
 void Device::setTemp(double temp)
 {
     this->temp = temp;
+    tempTimestamp = getCurrentTimestamp();
+
     if (connected) {
-        comm::Client::setTemperature(temp, 0);
+        comm::Client::setTemperature(temp, tempTimestamp);
     }
 }
 
@@ -55,6 +59,7 @@ void Device::setTemp(double temp)
 void Device::setIntervals(const comm::IntervalList &interval_list)
 {
     intervalList = interval_list;
+    intervalList.setTimestamp(getCurrentTimestamp());
     if (connected) {
         comm::Client::setIntervals(interval_list);
     }
@@ -97,6 +102,14 @@ void Device::disconnect()
 {
     connected = false;
     comm::Client::disconnect();
+}
+
+uint32_t Device::getCurrentTimestamp() const
+{
+    std::chrono::seconds seconds = std::chrono::duration_cast<std::chrono::seconds>(
+        std::chrono::system_clock::now().time_since_epoch()
+    );
+    return static_cast<uint32_t>(seconds.count());
 }
 
 

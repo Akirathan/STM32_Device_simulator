@@ -45,8 +45,11 @@ private:
     char key[KEY_LEN];
     char id[ID_LEN];
     double temp;
+    uint32_t tempTimestamp;
     comm::IntervalList intervalList;
     bool connected;
+
+    uint32_t getCurrentTimestamp() const;
 };
 
 
