@@ -100,6 +100,7 @@ void Device::intervalsRecvCb(const comm::IntervalList &interval_list)
  */
 bool Device::connect()
 {
+    connected = true;
     return comm::Client::sendConnectReq(id);
 }
 
