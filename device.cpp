@@ -40,7 +40,6 @@ double Device::getTemp() const
 /**
  * Sets the device temperature. Note that this temperature is periodically sent
  * to the server if this device is connected.
- * @note timestamp of temperature is always 0.
  * @param temp ... temperature to set.
  */
 void Device::setTemp(double temp)
@@ -48,9 +47,7 @@ void Device::setTemp(double temp)
     this->temp = temp;
     tempTimestamp = getCurrentTimestamp();
 
-    if (connected) {
-        comm::Client::setTemperature(temp, tempTimestamp);
-    }
+    comm::Client::setTemperature(temp, tempTimestamp);
 }
 
 /**
@@ -60,9 +57,8 @@ void Device::setIntervals(const comm::IntervalList &interval_list)
 {
     intervalList = interval_list;
     intervalList.setTimestamp(getCurrentTimestamp());
-    if (connected) {
-        comm::Client::setIntervals(interval_list);
-    }
+
+    comm::Client::setIntervals(interval_list);
 }
 
 const comm::IntervalList &Device::getIntervals() const
