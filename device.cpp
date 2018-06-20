@@ -65,6 +65,11 @@ void Device::setIntervals(const comm::IntervalList &interval_list)
     }
 }
 
+const comm::IntervalList &Device::getIntervals() const
+{
+    return intervalList;
+}
+
 /**
  * Sets connected state of the device ie. it is connected to the server.
  */
