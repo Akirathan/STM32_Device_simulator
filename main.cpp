@@ -29,7 +29,7 @@ void parse_request()
 int main(int argc, char *args[])
 {
     // TODO: add key argument
-    if (argc != 1) {
+    if (argc != 2) {
         cerr << "Wrong number of arguments" << endl;
         exit(1);
     }
