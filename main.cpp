@@ -34,7 +34,7 @@ int main(int argc, char *args[])
         exit(1);
     }
 
-    Device device(args[0], "key");
+    Device device(args[1], "key");
     ResponseBuffer::init();
     Client::init("127.0.0.1", 8000, &device);
     TcpDriver::init("127.0.0.1", 8000);
