@@ -201,6 +201,7 @@ void Client::readIntervalsResp(const http::Response &response, const uint32_t ti
     callIntervalsRecvCb(interval_list);
 
     intervalList = interval_list;
+    intervalList.setTimestamp(time_stamp);
 
     // Send temperature
     send(createPostTemperature(temperature, temperatureTimestamp), false);
