@@ -25,6 +25,16 @@ const char *Device::getId() const
     return id;
 }
 
+bool Device::isConnected() const
+{
+    return connected;
+}
+
+double Device::getTemp() const
+{
+    return temp;
+}
+
 /**
  * Sets the device temperature. Note that this temperature is periodically sent
  * to the server if this device is connected.
@@ -81,6 +91,12 @@ void Device::intervalsRecvCb(const comm::IntervalList &interval_list)
 bool Device::connect()
 {
     return comm::Client::sendConnectReq(id);
+}
+
+void Device::disconnect()
+{
+    connected = false;
+    comm::Client::disconnect();
 }
 
 

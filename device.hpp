@@ -26,7 +26,8 @@ public:
     /***************** Getters and setters *********************/
     const char * getKey() const;
     const char * getId() const;
-    uint32_t getTemp() const;
+    bool isConnected() const;
+    double getTemp() const;
     void setTemp(double temp);
     void setIntervals(const comm::IntervalList &interval_list);
     const comm::IntervalList & getIntervals() const;
@@ -38,6 +39,7 @@ public:
     void intervalsRecvCb(const comm::IntervalList &interval_list) override;
     /***********************************************************/
     bool connect();
+    void disconnect();
 
 private:
     char key[KEY_LEN];
