@@ -80,7 +80,8 @@ private:
     static http::Request createPostIntervalsReq(const IntervalList &interval_list);
     static http::Request createPostTemperature(const double temp, const uint32_t time_stamp);
     static http::Request createGetReq(const char *url);
-    static http::Request createPostReq(const char *url, const char *body, const char *content_type);
+    static http::Request createPostReq(const char *url, const char *body, const size_t body_len,
+                                       const char *content_type);
     static void callConnectedCb();
     static void callTempSentCb();
     static void callIntervalsSentCb();
