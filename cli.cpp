@@ -70,7 +70,7 @@ void Cli::parseCommand(const string &line)
         setTemperature(temp);
     }
     else if (line_items[0] == "set" && line_items[1] == "intervals") {
-        line_items.erase(line_items.begin(), line_items.begin() + 1);
+        line_items.erase(line_items.begin(), line_items.begin() + 2);
         parseSetIntervalsCommand(line_items);
     }
     else if (line_items[0] == "get" && line_items[1] == "temp") {
