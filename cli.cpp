@@ -128,7 +128,10 @@ uint32_t Cli::parseTime(const std::string &str)
     getline(iss, hours, ':');
     getline(iss, minutes, ':');
 
-    return static_cast<uint32_t>(stoul(hours, nullptr) + stoul(minutes, nullptr) * 60);
+    int hoursInt = stoi(hours, nullptr);
+    int minutesInt = stoi(minutes, nullptr);
+
+    return static_cast<uint32_t>(hoursInt * 3600 + minutesInt * 60);
 }
 
 void Cli::connectDevice()
