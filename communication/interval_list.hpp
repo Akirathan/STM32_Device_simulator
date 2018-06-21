@@ -24,7 +24,7 @@ public:
     void addInterval(const Interval &interval);
     const Interval * getInterval(size_t index) const;
     size_t getIntervalsCount() const;
-    void serialize(char *buffer) const;
+    void serialize(uint8_t *buffer, size_t *buff_len) const;
 
 private:
     Interval intervals[MAX_NUM];
