@@ -13,6 +13,12 @@
 
 using namespace std;
 
+void Cli::notifyIntervalsChanged()
+{
+    cout << endl << "(Intervals changed on server)" << endl;
+    prompt();
+}
+
 Cli::Cli(Device &device) :
     device(device)
 {
@@ -31,6 +37,11 @@ void Cli::poll()
     }
 }
 
+void Cli::prompt()
+{
+    cout << "> " << flush;
+}
+
 void Cli::printHelp() const
 {
     cout << "known commands:" << endl
@@ -40,11 +51,6 @@ void Cli::printHelp() const
               << "  set intervals <intervals>" << endl
               << "  get temp" << endl
               << "  get intervals" << endl;
-}
-
-void Cli::prompt() const
-{
-    cout << "> " << flush;
 }
 
 void Cli::parseCommand(const string &line)
