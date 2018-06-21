@@ -265,7 +265,7 @@ void Client::readTempAckResp(const http::Response &response)
 
 http::Request Client::createConnectReq(const char *device_id)
 {
-    return createPostReq(CONNECT_URL, device_id, "text/plain");
+    return createPostReq(CONNECT_URL, device_id, std::strlen(device_id), "text/plain");
 }
 
 http::Request Client::createIntervalTimestampReq()
@@ -280,10 +280,12 @@ http::Request Client::createGetIntervalsReq()
 
 http::Request Client::createPostIntervalsReq(const IntervalList &interval_list)
 {
-    char buffer[IntervalList::MAX_SIZE];
-    interval_list.serialize(buffer);
+    uint8_t buffer[IntervalList::MAX_SIZE];
+    size_t buff_len = 0;
+    interval_list.serialize(buffer, &buff_len);
 
-    return createPostReq(INTERVALS_URL, buffer, "text/plain");
+    return createPostReq(INTERVALS_URL, reinterpret_cast<char *>(buffer),
+                         buff_len, "application/octet-stream");
 }
 
 http::Request Client::createPostTemperature(const double temp, const uint32_t time_stamp)
@@ -301,7 +303,7 @@ http::Request Client::createPostTemperature(const double temp, const uint32_t ti
     *(body + timestamp_len) = '\n';
     std::strcpy(body + timestamp_len + 1, temp_str);
 
-    return createPostReq(TEMP_URL, body, "text/plain");
+    return createPostReq(TEMP_URL, body, std::strlen(body), "text/plain");
 }
 
 http::Request Client::createGetReq(const char *url)
@@ -317,24 +319,25 @@ http::Request Client::createGetReq(const char *url)
     return request;
 }
 
-http::Request Client::createPostReq(const char *url, const char *body, const char *content_type)
+http::Request Client::createPostReq(const char *url, const char *body, const size_t body_len,
+                                    const char *content_type)
 {
     using namespace http;
 
-    char body_len[20];
-    std::sprintf(body_len, "%lu", std::strlen(body));
+    char body_len_str[20];
+    std::sprintf(body_len_str, "%lu", body_len);
 
     Request request(Request::POST, url);
     HeaderOption hdr_option_host(HeaderOption::HOST, host);
     HeaderOption hdr_option_content_type(HeaderOption::CONTENT_TYPE, content_type);
-    HeaderOption hdr_option_content_length(HeaderOption::CONTENT_LENGTH, body_len);
+    HeaderOption hdr_option_content_length(HeaderOption::CONTENT_LENGTH, body_len_str);
     Header hdr;
     hdr.appendOption(hdr_option_host);
     hdr.appendOption(hdr_option_content_type);
     hdr.appendOption(hdr_option_content_length);
     request.appendHeader(hdr);
 
-    request.appendBody(body);
+    request.appendBody(body, body_len);
     return request;
 }
 

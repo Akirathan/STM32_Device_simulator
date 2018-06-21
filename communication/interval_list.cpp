@@ -62,14 +62,19 @@ size_t IntervalList::getIntervalsCount() const
 /**
  * Serializes this IntervalList into given buffer.
  *
- * @param buffer     ... buffer to serialize this IntervalList in.
+ * @param buffer   ... buffer to serialize this IntervalList in.
+ * @param buff_len ... if not nullptr, length of buffer will be filled.
  */
-void IntervalList::serialize(char *buffer) const
+void IntervalList::serialize(uint8_t *buffer, size_t *buff_len) const
 {
     size_t buff_idx = 0;
     for (size_t i = 0; i < intervalsIdx; ++i) {
         intervals[i].serialize(buffer + buff_idx);
         buff_idx += Interval::SIZE;
+    }
+
+    if (buff_len != nullptr) {
+        *buff_len = intervalsIdx * Interval::SIZE;
     }
 }
 

@@ -70,7 +70,7 @@ void Cli::parseCommand(const string &line)
         setTemperature(temp);
     }
     else if (line_items[0] == "set" && line_items[1] == "intervals") {
-        line_items.erase(line_items.begin(), line_items.begin() + 1);
+        line_items.erase(line_items.begin(), line_items.begin() + 2);
         parseSetIntervalsCommand(line_items);
     }
     else if (line_items[0] == "get" && line_items[1] == "temp") {
@@ -93,9 +93,9 @@ void Cli::parseSetIntervalsCommand(const std::vector<std::string> &line_items)
 
     comm::IntervalList interval_list;
     for (size_t i = 0; i < line_items.size(); i += 3) {
-        uint32_t from_time = parseTime(line_items[0]);
-        uint32_t to_time = parseTime(line_items[1]);
-        uint32_t temp = static_cast<uint32_t>(stoul(line_items[2]));
+        uint32_t from_time = parseTime(line_items[i]);
+        uint32_t to_time = parseTime(line_items[i+1]);
+        uint32_t temp = static_cast<uint32_t>(stoul(line_items[i+2]));
         comm::Interval interval(from_time, to_time, temp);
         interval_list.addInterval(interval);
     }
@@ -111,7 +111,9 @@ vector<string> Cli::splitLine(const string &line) const
     do {
         string item;
         istringstream >> item;
-        line_items.push_back(item);
+        if (item.compare("") != 0) {
+            line_items.push_back(item);
+        }
     }
     while (istringstream);
 
@@ -126,7 +128,10 @@ uint32_t Cli::parseTime(const std::string &str)
     getline(iss, hours, ':');
     getline(iss, minutes, ':');
 
-    return static_cast<uint32_t>(stoul(hours, nullptr) + stoul(minutes, nullptr) * 60);
+    int hoursInt = stoi(hours, nullptr);
+    int minutesInt = stoi(minutes, nullptr);
+
+    return static_cast<uint32_t>(hoursInt * 3600 + minutesInt * 60);
 }
 
 void Cli::connectDevice()
@@ -169,10 +174,10 @@ void Cli::getIntervals()
     for (size_t i = 0; i < interval_list.getIntervalsCount(); i++) {
         const comm::Interval *interval = interval_list.getInterval(i);
 
-        int from_hours = interval->getFromTime() / 60 * 60;
-        int from_minutes = interval->getFromTime() / 60;
-        int to_hours = interval->getToTime() / 60 * 60;
-        int to_minutes = interval->getToTime() / 60;
+        int from_hours = interval->getFromTime() / (60 * 60);
+        int from_minutes = (interval->getFromTime() - from_hours * 3600) / 60;
+        int to_hours = interval->getToTime() / (60 * 60);
+        int to_minutes = (interval->getToTime() - to_hours * 3600) / 60;
 
         cout << to_string(from_hours) << ":" << to_string(from_minutes) << " "
              << to_string(to_hours) << ":" << to_string(to_minutes) << " "

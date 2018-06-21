@@ -56,7 +56,7 @@ void Device::setIntervals(const comm::IntervalList &interval_list)
     intervalList = interval_list;
     intervalList.setTimestamp(getCurrentTimestamp());
 
-    comm::Client::setIntervals(interval_list);
+    comm::Client::setIntervals(intervalList);
 }
 
 const comm::IntervalList &Device::getIntervals() const
