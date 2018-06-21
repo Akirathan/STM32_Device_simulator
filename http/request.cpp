@@ -37,9 +37,9 @@ void Request::appendHeader(const Header &header)
     this->header = header;
 }
 
-void Request::appendBody(const char *value)
+void Request::appendBody(const char *buff, const size_t buff_size)
 {
-    std::strcpy(body, value);
+    std::memcpy(body, buff, buff_size);
 }
 
 void Request::toBuffer(char *buffer) const

@@ -29,7 +29,7 @@ public:
 	Request(method_t method, const char *url);
 	size_t getSize() const;
 	void appendHeader(const Header &header);
-	void appendBody(const char *value);
+	void appendBody(const char *buff, const size_t buff_size);
     void toBuffer(char *buffer) const;
 
 private:
