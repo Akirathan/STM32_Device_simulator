@@ -111,7 +111,9 @@ vector<string> Cli::splitLine(const string &line) const
     do {
         string item;
         istringstream >> item;
-        line_items.push_back(item);
+        if (item.compare("") != 0) {
+            line_items.push_back(item);
+        }
     }
     while (istringstream);
 
