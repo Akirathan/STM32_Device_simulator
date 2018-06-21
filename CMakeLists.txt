@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.7)
 project(device_simulator)
 
+set(CMAKE_CXX_COMPILER g++)
+set(CMAKE_C_COMPILER gcc)
+
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 
 include_directories(
     .
@@ -12,6 +16,7 @@ include_directories(
 set(COMMUNICATION_SOURCES
     communication/tcp_driver.cpp
     communication/client.cpp
+    communication/client_timer.cpp
     communication/interval.cpp
     communication/interval_list.cpp
 )
@@ -37,3 +42,5 @@ set(SOURCE_FILES
 )
 
 add_executable(device_simulator ${SOURCE_FILES})
+
+target_link_libraries(device_simulator "-lrt")

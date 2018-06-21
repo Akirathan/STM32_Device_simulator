@@ -6,6 +6,7 @@
 #include "http/response_buffer.hpp"
 #include "http/request.hpp"
 #include "communication/interval.hpp"
+#include "communication/client_timer.hpp"
 #include "communication/client.hpp"
 #include "communication/tcp_driver.hpp"
 #include "device.hpp"
@@ -36,6 +37,7 @@ int main(int argc, char *args[])
 
     Device device(args[1], "key");
     ResponseBuffer::init();
+    ClientTimer::init();
     Client::init("127.0.0.1", 8000, &device);
     TcpDriver::init("127.0.0.1", 8000);
 

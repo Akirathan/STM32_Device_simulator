@@ -6,6 +6,7 @@
 #include "client.hpp"
 #include "http/response_buffer.hpp"
 #include "tcp_driver.hpp"
+#include "client_timer.hpp"
 
 namespace comm {
 
@@ -76,6 +77,19 @@ bool Client::sendConnectReq(const char *device_id)
     state = AWAIT_CONNECT_RESPONSE;
 
     return send(createConnectReq(device_id), true);
+}
+
+/**
+ * Starts whole Client cycle (interval timestamp --> intervals --> temperature).
+ * Called from ClientTimer.
+ * Note that ClientTimer is mandatory so every cycle does not start immediately
+ * after previous one finishes.
+ */
+void Client::startCycle()
+{
+    send(createIntervalTimestampReq(), true);
+    state = AWAIT_INTERVAL_TIMESTAMP_RESPONSE;
+    callTempSentCb();
 }
 
 void Client::disconnect()
@@ -213,10 +227,10 @@ void Client::readIntervalsResp(const http::Response &response, const uint32_t ti
 
     IntervalList interval_list =
         IntervalList::deserialize(response.getBody(), response.getBodySize());
-    callIntervalsRecvCb(interval_list);
 
     intervalList = interval_list;
     intervalList.setTimestamp(time_stamp);
+    callIntervalsRecvCb(intervalList);
 
     // Send temperature
     send(createPostTemperature(temperature, temperatureTimestamp), false);
@@ -246,9 +260,7 @@ void Client::readTempAckResp(const http::Response &response)
         return;
     }
 
-    send(createIntervalTimestampReq(), true);
-    state = AWAIT_INTERVAL_TIMESTAMP_RESPONSE;
-    callTempSentCb();
+    ClientTimer::start(2);
 }
 
 http::Request Client::createConnectReq(const char *device_id)

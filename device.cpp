@@ -7,6 +7,7 @@
 #include <iostream>
 #include <chrono>
 #include "communication/client.hpp"
+#include "cli.hpp"
 
 Device::Device(const char *id, const char *key) :
         temp(0.0),
@@ -50,9 +51,6 @@ void Device::setTemp(double temp)
     comm::Client::setTemperature(temp, tempTimestamp);
 }
 
-/**
- * Note that Device must be connected so the intervals are communicated with server.
- */
 void Device::setIntervals(const comm::IntervalList &interval_list)
 {
     intervalList = interval_list;
@@ -84,9 +82,15 @@ void Device::intervalsSentCb()
     //std::cout << "Device: intervalsSentCb" << std::endl;
 }
 
+/**
+ * Intervals are received from server and overwrite currently set intervals.
+ * @param interval_list ... received intervals from server.
+ */
 void Device::intervalsRecvCb(const comm::IntervalList &interval_list)
 {
-    //std::cout << "Device: intervalsReceiveCb" << std::endl;
+    Cli::notifyIntervalsChanged();
+
+    intervalList = interval_list;
 }
 
 /**

@@ -56,6 +56,10 @@ void TcpDriver::poll()
         size_t read_num = 0;
         do {
             read_num = static_cast<size_t>(read(socketFd, buff, 512));
+            if (read_num == -1) {
+                // Error - probably because of signal handling (EINTR)
+                return;
+            }
             if (read_num > 0) {
                 http::ResponseBuffer::buff(buff, read_num);
             }
