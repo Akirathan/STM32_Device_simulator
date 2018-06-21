@@ -93,9 +93,9 @@ void Cli::parseSetIntervalsCommand(const std::vector<std::string> &line_items)
 
     comm::IntervalList interval_list;
     for (size_t i = 0; i < line_items.size(); i += 3) {
-        uint32_t from_time = parseTime(line_items[0]);
-        uint32_t to_time = parseTime(line_items[1]);
-        uint32_t temp = static_cast<uint32_t>(stoul(line_items[2]));
+        uint32_t from_time = parseTime(line_items[i]);
+        uint32_t to_time = parseTime(line_items[i+1]);
+        uint32_t temp = static_cast<uint32_t>(stoul(line_items[i+2]));
         comm::Interval interval(from_time, to_time, temp);
         interval_list.addInterval(interval);
     }
