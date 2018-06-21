@@ -280,17 +280,35 @@ http::Request Client::createGetIntervalsReq()
 
 http::Request Client::createPostIntervalsReq(const IntervalList &interval_list)
 {
+    char timestamp_str[12];
+    std::sprintf(timestamp_str, "%u", interval_list.getTimestamp());
+
     uint8_t buffer[IntervalList::MAX_SIZE];
     size_t buff_len = 0;
     interval_list.serialize(buffer, &buff_len);
 
-    return createPostReq(INTERVALS_URL, reinterpret_cast<char *>(buffer),
-                         buff_len, "application/octet-stream");
+    // Copy timestamp into body
+    char body[IntervalList::MAX_SIZE + 13];
+    char *body_it = body;
+    std::strcpy(body_it, timestamp_str);
+    body_it += std::strlen(timestamp_str);
+
+    *body_it = '\n';
+    body_it++;
+
+    // Copy intervals into body
+    std::memcpy(body_it, buffer, buff_len);
+    body_it += buff_len;
+
+    *body_it = '\0';
+
+    return createPostReq(INTERVALS_URL, body, std::strlen(timestamp_str) + 1 + buff_len,
+                         "application/octet-stream");
 }
 
 http::Request Client::createPostTemperature(const double temp, const uint32_t time_stamp)
 {
-    char timestamp_str[10];
+    char timestamp_str[12];
     char temp_str[10];
     std::sprintf(temp_str, "%f", temp);
     std::sprintf(timestamp_str, "%u", time_stamp);
@@ -337,7 +355,7 @@ http::Request Client::createPostReq(const char *url, const char *body, const siz
     hdr.appendOption(hdr_option_content_length);
     request.appendHeader(hdr);
 
-    request.appendBody(body, body_len);
+    request.appendBody(reinterpret_cast<const uint8_t *>(body), body_len);
     return request;
 }
 

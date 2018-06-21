@@ -7,6 +7,7 @@
 
 
 #include <cstddef>
+#include <cstdint>
 #include "body.hpp"
 #include "header_option.hpp"
 #include "header.hpp"
@@ -29,7 +30,7 @@ public:
 	Request(method_t method, const char *url);
 	size_t getSize() const;
 	void appendHeader(const Header &header);
-	void appendBody(const char *buff, const size_t buff_size);
+	void appendBody(const uint8_t *buff, const size_t buff_size);
     void toBuffer(char *buffer) const;
 
 private:
@@ -37,7 +38,8 @@ private:
 	char url[URL_MAX_SIZE];
     const char *version;
 	Header header;
-	char body[Body::MAX_SIZE];
+	uint8_t body[Body::MAX_SIZE];
+    size_t bodyLen;
 
 	size_t getFirstLineSize() const;
 	void firstLineToBuffer(char *buffer) const;

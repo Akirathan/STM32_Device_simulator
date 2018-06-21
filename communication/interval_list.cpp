@@ -12,7 +12,7 @@ IntervalList IntervalList::deserialize(const uint8_t *buffer, const size_t buff_
     rt_assert(buff_size % Interval::SIZE == 0, "IntervalList: wrong size of buffer");
 
     IntervalList interval_list;
-    for (int buff_idx = 0; buff_idx < buff_size; buff_idx += Interval::SIZE) {
+    for (size_t buff_idx = 0; buff_idx < buff_size; buff_idx += Interval::SIZE) {
         Interval interval = Interval::deserialize(buffer + buff_idx, Interval::SIZE);
         interval_list.addInterval(interval);
     }
