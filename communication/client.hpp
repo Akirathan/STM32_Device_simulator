@@ -37,6 +37,7 @@ public:
     static void init(const char *ip_addr, uint16_t port, IClientCbRecver *client_cb_recver);
     static void receiveCb(const http::Response &response);
     static bool sendConnectReq(const char *device_id);
+    static void startCycle();
     static void disconnect();
     static bool isConnected();
     static void setTemperature(const double temp, const uint32_t time_stamp);
