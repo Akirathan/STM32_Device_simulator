@@ -1,14 +1,19 @@
 #include <cstring>
 #include <cstdio>
+#include <chrono>
+#include <iostream>
+#include <sstream>
 #include "http/response_buffer.hpp"
 #include "http/request.hpp"
 #include "communication/interval.hpp"
 #include "communication/client.hpp"
 #include "communication/tcp_driver.hpp"
 #include "device.hpp"
+#include "cli.hpp"
 
 using namespace http;
 using namespace comm;
+using namespace std;
 
 void parse_request()
 {
@@ -21,17 +26,24 @@ void parse_request()
     exit(0);
 }
 
-int main()
+int main(int argc, char *args[])
 {
-    http::ResponseBuffer::init();
-    Device device("stm1", "key");
-    comm::Client::init("127.0.0.1", 8000, &device);
-    comm::TcpDriver::init("127.0.0.1", 8000);
-    if (!device.connect()) {
-        std::printf("Connection failed");
+    // TODO: add key argument
+    if (argc != 2) {
+        cerr << "Wrong number of arguments" << endl;
+        exit(1);
     }
 
+    Device device(args[1], "key");
+    ResponseBuffer::init();
+    Client::init("127.0.0.1", 8000, &device);
+    TcpDriver::init("127.0.0.1", 8000);
+
+    Cli cli(device);
     while (true) {
-        TcpDriver::poll();
+        if (device.isConnected()) {
+            TcpDriver::poll();
+        }
+        cli.poll();
     }
 }

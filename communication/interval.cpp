@@ -56,4 +56,19 @@ void Interval::setTemp(const uint32_t temp)
     this->temp = temp;
 }
 
+uint32_t Interval::getFromTime() const
+{
+    return fromTime;
+}
+
+uint32_t Interval::getToTime() const
+{
+    return toTime;
+}
+
+uint32_t Interval::getTemp() const
+{
+    return temp;
+}
+
 } // namespace comm

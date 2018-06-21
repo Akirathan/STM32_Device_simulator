@@ -21,6 +21,9 @@ public:
     void setFromTime(const uint32_t fromTime);
     void setToTime(const uint32_t toTime);
     void setTemp(const uint32_t temp);
+    uint32_t getFromTime() const;
+    uint32_t getToTime() const;
+    uint32_t getTemp() const;
 
 private:
     uint32_t fromTime;

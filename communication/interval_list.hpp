@@ -22,6 +22,8 @@ public:
     void setTimestamp(uint32_t time_stamp);
     uint32_t getTimestamp() const;
     void addInterval(const Interval &interval);
+    const Interval * getInterval(size_t index) const;
+    size_t getIntervalsCount() const;
     void serialize(char *buffer) const;
 
 private:
