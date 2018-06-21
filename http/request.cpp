@@ -10,7 +10,8 @@ namespace http {
 
 Request::Request(Request::method_t method, const char *url) :
         method(method),
-        version("HTTP/1.1")
+        version("HTTP/1.1"),
+        bodyLen(0)
 {
     std::strcpy(this->url, url);
 
@@ -24,10 +25,10 @@ size_t Request::getSize() const
 	size_t size = 0;
     size += getFirstLineSize();
     size += header.getTotalSize();
-    if (std::strlen(body) > 0) {
+    if (bodyLen > 0) {
         // Empty line (delimiter) size + header size
         size += 2;
-        size += std::strlen(body);
+        size += bodyLen;
     }
     return size;
 }
@@ -37,7 +38,7 @@ void Request::appendHeader(const Header &header)
     this->header = header;
 }
 
-void Request::appendBody(const char *buff, const size_t buff_size)
+void Request::appendBody(const uint8_t *buff, const size_t buff_size)
 {
     std::memcpy(body, buff, buff_size);
 }
@@ -48,10 +49,11 @@ void Request::toBuffer(char *buffer) const
     buffer += getFirstLineSize();
     header.toBuffer(buffer);
     buffer += header.getTotalSize();
-    if (std::strlen(body) > 0) {
+    if (bodyLen > 0) {
         *(buffer++) = '\r';
         *(buffer++) = '\n';
-        std::strcpy(buffer, body);
+        std::memcpy(buffer, body, bodyLen);
+        *(buffer + bodyLen) = '\0';
     }
 }
 

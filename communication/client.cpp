@@ -355,7 +355,7 @@ http::Request Client::createPostReq(const char *url, const char *body, const siz
     hdr.appendOption(hdr_option_content_length);
     request.appendHeader(hdr);
 
-    request.appendBody(body, body_len);
+    request.appendBody(reinterpret_cast<const uint8_t *>(body), body_len);
     return request;
 }
 
