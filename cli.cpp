@@ -169,10 +169,10 @@ void Cli::getIntervals()
     for (size_t i = 0; i < interval_list.getIntervalsCount(); i++) {
         const comm::Interval *interval = interval_list.getInterval(i);
 
-        int from_hours = interval->getFromTime() / 60 * 60;
-        int from_minutes = interval->getFromTime() / 60;
-        int to_hours = interval->getToTime() / 60 * 60;
-        int to_minutes = interval->getToTime() / 60;
+        int from_hours = interval->getFromTime() / (60 * 60);
+        int from_minutes = (interval->getFromTime() - from_hours * 3600) / 60;
+        int to_hours = interval->getToTime() / (60 * 60);
+        int to_minutes = (interval->getToTime() - to_hours * 3600) / 60;
 
         cout << to_string(from_hours) << ":" << to_string(from_minutes) << " "
              << to_string(to_hours) << ":" << to_string(to_minutes) << " "
